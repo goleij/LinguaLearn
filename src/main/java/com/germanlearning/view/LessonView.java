@@ -2,10 +2,10 @@ package com.germanlearning.view;
 
 import com.germanlearning.config.SecurityService;
 import com.germanlearning.model.*;
-import com.germanlearning.service.ExerciseService;
-import com.germanlearning.service.ExerciseService.ExerciseResult;
 import com.germanlearning.service.LessonService;
 import com.germanlearning.service.ProgressService;
+import com.germanlearning.service.ProgressService.AnswerResult;
+import com.germanlearning.service.ProgressService.LessonCompletionResult;
 import com.germanlearning.view.components.*;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -33,7 +33,6 @@ import java.util.List;
 public class LessonView extends VerticalLayout implements HasUrlParameter<Long> {
 
     private final LessonService lessonService;
-    private final ExerciseService exerciseService;
     private final ProgressService progressService;
     private final SecurityService securityService;
 
@@ -41,9 +40,6 @@ public class LessonView extends VerticalLayout implements HasUrlParameter<Long> 
     private Long userId;
     private List<Exercise> exercises;
     private int currentExerciseIndex = 0;
-    private int correctAnswers = 0;
-    private int totalXpEarned = 0;
-    private boolean isPracticeMode = false;
 
     private ProgressBar progressBar;
     private Span progressLabel;
@@ -51,11 +47,9 @@ public class LessonView extends VerticalLayout implements HasUrlParameter<Long> 
     private ExerciseComponent currentComponent;
 
     public LessonView(LessonService lessonService,
-            ExerciseService exerciseService,
             ProgressService progressService,
             SecurityService securityService) {
         this.lessonService = lessonService;
-        this.exerciseService = exerciseService;
         this.progressService = progressService;
         this.securityService = securityService;
 
@@ -86,14 +80,14 @@ public class LessonView extends VerticalLayout implements HasUrlParameter<Long> 
                         return;
                     }
 
-                    // Check if lesson was already completed (practice mode)
-                    isPracticeMode = progressService.isLessonCompleted(userId, lessonId);
-
                     exercises = lessonService.getExercisesForLesson(lessonId);
                     if (exercises.isEmpty()) {
                         showNoExercisesMessage();
                         return;
                     }
+
+                    // A fresh run: the service clears the per-attempt counters
+                    progressService.startLessonAttempt(userId, lessonId);
 
                     buildLessonUI(lesson);
                 },
@@ -191,20 +185,14 @@ public class LessonView extends VerticalLayout implements HasUrlParameter<Long> 
 
     private void handleAnswer(String answer) {
         Exercise exercise = exercises.get(currentExerciseIndex);
-        ExerciseResult result = exerciseService.validateAnswer(exercise.getId(), answer);
 
-        progressService.recordAnswer(userId, lessonId, result.isCorrect());
+        AnswerResult result = progressService.submitAnswer(userId, lessonId, exercise.getId(), answer);
 
-        if (result.isCorrect()) {
-            correctAnswers++;
-            totalXpEarned += result.getXpEarned();
-            showFeedback(true, result);
-        } else {
-            showFeedback(false, result);
-        }
+        showFeedback(result);
     }
 
-    private void showFeedback(boolean correct, ExerciseResult result) {
+    private void showFeedback(AnswerResult result) {
+        boolean correct = result.isCorrect();
         exerciseContainer.removeAll();
 
         VerticalLayout feedbackCard = new VerticalLayout();
@@ -237,8 +225,8 @@ public class LessonView extends VerticalLayout implements HasUrlParameter<Long> 
             feedbackCard.add(explanation);
         }
 
-        if (correct) {
-            Span xpBadge = new Span("+" + result.getXpEarned() + " XP");
+        if (result.getXpAwarded() > 0) {
+            Span xpBadge = new Span("+" + result.getXpAwarded() + " XP");
             xpBadge.getStyle()
                     .set("background-color", "#FFC800")
                     .set("color", "#3C3C3C")
@@ -268,7 +256,7 @@ public class LessonView extends VerticalLayout implements HasUrlParameter<Long> 
     private void showCompletionScreen() {
         exerciseContainer.removeAll();
 
-        progressService.completeLesson(userId, lessonId);
+        LessonCompletionResult result = progressService.completeLesson(userId, lessonId);
 
         VerticalLayout completionCard = new VerticalLayout();
         completionCard.setWidthFull();
@@ -284,24 +272,14 @@ public class LessonView extends VerticalLayout implements HasUrlParameter<Long> 
         H2 congrats = new H2("Lesson Complete!");
         congrats.getStyle().set("color", "#58CC02");
 
-        double score = (double) correctAnswers / exercises.size() * 100;
         Paragraph scoreText = new Paragraph(String.format("Score: %d/%d (%.0f%%)",
-                correctAnswers, exercises.size(), score));
+                result.getCorrectAnswers(), result.getTotalAnswers(), result.getScorePercentage()));
         scoreText.getStyle().set("font-size", "18px").set("color", "#3C3C3C");
-
-        Span xpBadge = new Span("+" + totalXpEarned + " XP earned!");
-        xpBadge.getStyle()
-                .set("background-color", "#FFC800")
-                .set("color", "#3C3C3C")
-                .set("padding", "10px 25px")
-                .set("border-radius", "25px")
-                .set("font-weight", "bold")
-                .set("font-size", "20px");
 
         completionCard.add(trophy, congrats, scoreText);
 
         // Show XP badge only if not in practice mode
-        if (isPracticeMode) {
+        if (result.isPracticeMode()) {
             Span practiceLabel = new Span("🔄 Practice Mode - No XP Earned");
             practiceLabel.getStyle()
                     .set("background-color", "#777")
@@ -312,13 +290,22 @@ public class LessonView extends VerticalLayout implements HasUrlParameter<Long> 
                     .set("font-size", "16px");
             completionCard.add(practiceLabel);
         } else {
+            Span xpBadge = new Span("+" + result.getLessonXpEarned() + " XP earned!");
+            xpBadge.getStyle()
+                    .set("background-color", "#FFC800")
+                    .set("color", "#3C3C3C")
+                    .set("padding", "10px 25px")
+                    .set("border-radius", "25px")
+                    .set("font-weight", "bold")
+                    .set("font-size", "20px");
             completionCard.add(xpBadge);
         }
 
-        boolean passed = score >= 80;
+        boolean passed = result.isPassed();
         Paragraph passMessage = new Paragraph(passed
                 ? "Great job! You've unlocked the next lesson!"
-                : "You need 80% to pass. Try again!");
+                : String.format("You need %.0f%% to pass. Try again!",
+                        progressService.getPassThresholdPercentage()));
         passMessage.getStyle()
                 .set("color", passed ? "#58CC02" : "#FF9600")
                 .set("font-weight", "bold");
@@ -334,9 +321,7 @@ public class LessonView extends VerticalLayout implements HasUrlParameter<Long> 
                 .set("padding", "15px 30px");
         retryBtn.addClickListener(e -> {
             currentExerciseIndex = 0;
-            correctAnswers = 0;
-            totalXpEarned = 0;
-            progressService.resetLessonProgressForRetry(userId, lessonId);
+            progressService.startLessonAttempt(userId, lessonId);
             showCurrentExercise();
         });
 
@@ -350,7 +335,7 @@ public class LessonView extends VerticalLayout implements HasUrlParameter<Long> 
 
         buttons.add(retryBtn, homeBtn);
 
-        completionCard.add(trophy, congrats, scoreText, xpBadge, passMessage, buttons);
+        completionCard.add(passMessage, buttons);
         exerciseContainer.add(completionCard);
     }
 

@@ -2,6 +2,12 @@ package com.germanlearning.service;
 
 import org.springframework.stereotype.Service;
 
+/**
+ * Single source of truth for the XP formula.
+ *
+ * No other class is allowed to compute XP: {@link ProgressService} asks this
+ * service for the amount and persists exactly that value.
+ */
 @Service
 public class ScoreService {
 
@@ -9,17 +15,20 @@ public class ScoreService {
     private static final int STREAK_BONUS_THRESHOLD = 3;
     private static final int STREAK_BONUS_XP = 5;
 
-    public int calculateXp(boolean isCorrect, int currentStreak) {
-        if (!isCorrect) {
-            return 0;
-        }
+    /**
+     * XP for one correct answer.
+     *
+     * @param exerciseXpReward the XP configured on the exercise (falls back to
+     *                         {@link #BASE_XP} when the exercise has no value)
+     * @param currentStreak    number of consecutive correct answers in this
+     *                         lesson attempt, including the answer being scored
+     */
+    public int calculateXpForCorrectAnswer(int exerciseXpReward, int currentStreak) {
+        int xp = exerciseXpReward > 0 ? exerciseXpReward : BASE_XP;
 
-        int xp = BASE_XP;
-        
         if (currentStreak >= STREAK_BONUS_THRESHOLD) {
             xp += STREAK_BONUS_XP;
         }
-        
         if (currentStreak >= 5) {
             xp += 2;
         }

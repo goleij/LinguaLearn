@@ -29,34 +29,38 @@ public class ExerciseService {
         return exerciseRepository.countByLessonId(lessonId);
     }
 
+    /**
+     * Checks an answer. Deliberately says nothing about XP: scoring lives in
+     * {@link ScoreService} and is persisted by
+     * {@link ProgressService#submitAnswer(Long, Long, Long, String)}.
+     */
     public ExerciseResult validateAnswer(Long exerciseId, String userAnswer) {
         Optional<Exercise> exerciseOpt = exerciseRepository.findById(exerciseId);
         if (exerciseOpt.isEmpty()) {
             throw new IllegalArgumentException("Exercise not found");
         }
 
-        Exercise exercise = exerciseOpt.get();
+        return validateAnswer(exerciseOpt.get(), userAnswer);
+    }
+
+    public ExerciseResult validateAnswer(Exercise exercise, String userAnswer) {
         boolean isCorrect = exercise.validateAnswer(userAnswer);
 
         return new ExerciseResult(
                 isCorrect,
                 exercise.getCorrectAnswer(),
-                exercise.getExplanation(),
-                isCorrect ? exercise.getXpReward() : 0
-        );
+                exercise.getExplanation());
     }
 
     public static class ExerciseResult {
         private final boolean correct;
         private final String correctAnswer;
         private final String explanation;
-        private final int xpEarned;
 
-        public ExerciseResult(boolean correct, String correctAnswer, String explanation, int xpEarned) {
+        public ExerciseResult(boolean correct, String correctAnswer, String explanation) {
             this.correct = correct;
             this.correctAnswer = correctAnswer;
             this.explanation = explanation;
-            this.xpEarned = xpEarned;
         }
 
         public boolean isCorrect() {
@@ -69,10 +73,6 @@ public class ExerciseService {
 
         public String getExplanation() {
             return explanation;
-        }
-
-        public int getXpEarned() {
-            return xpEarned;
         }
     }
 }

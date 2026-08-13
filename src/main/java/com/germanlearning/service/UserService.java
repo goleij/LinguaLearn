@@ -21,19 +21,17 @@ public class UserService {
         this.progressRepository = progressRepository;
     }
 
+    /**
+     * XP is awarded exclusively by
+     * {@link ProgressService#submitAnswer(Long, Long, Long, String)}; this
+     * service only reads it.
+     */
     public Optional<User> getUserById(Long userId) {
         return userRepository.findById(userId);
     }
 
     public Optional<User> getUserByUsername(String username) {
         return userRepository.findByUsername(username);
-    }
-
-    public User updateXp(Long userId, int xpAmount) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
-        user.addXp(xpAmount);
-        return userRepository.save(user);
     }
 
     public User updateStreak(Long userId) {

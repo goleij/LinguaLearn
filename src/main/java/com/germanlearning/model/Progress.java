@@ -2,10 +2,17 @@ package com.germanlearning.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "progress")
 public class Progress {
+
+    /** Score needed to complete a lesson and unlock the next one. */
+    public static final double PASS_THRESHOLD_PERCENTAGE = 80.0;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,6 +46,22 @@ public class Progress {
 
     @Column(nullable = false)
     private double bestScore = 0.0;
+
+    /**
+     * Consecutive correct answers within the current lesson attempt.
+     * The explicit default keeps the SQLite ALTER TABLE valid when this column
+     * is added to a database that already holds progress rows.
+     */
+    @Column(name = "current_streak", columnDefinition = "integer not null default 0")
+    private int currentStreak = 0;
+
+    /**
+     * Ids of the exercises that have already paid out XP for this lesson,
+     * stored comma separated. Used to make XP awarding idempotent per exercise
+     * so retrying a lesson cannot farm unlimited XP.
+     */
+    @Column(name = "xp_awarded_exercise_ids", length = 2000)
+    private String xpAwardedExerciseIds;
 
     private LocalDateTime completedAt;
 
@@ -160,7 +183,7 @@ public class Progress {
     }
 
     public boolean hasPassedThreshold() {
-        return getScorePercentage() >= 80.0;
+        return getScorePercentage() >= PASS_THRESHOLD_PERCENTAGE;
     }
 
     public boolean isXpLocked() {
@@ -184,5 +207,64 @@ public class Progress {
         if (currentScore > this.bestScore) {
             this.bestScore = currentScore;
         }
+    }
+
+    public int getCurrentStreak() {
+        return currentStreak;
+    }
+
+    public void setCurrentStreak(int currentStreak) {
+        this.currentStreak = currentStreak;
+    }
+
+    public void incrementStreak() {
+        this.currentStreak++;
+    }
+
+    public void resetStreak() {
+        this.currentStreak = 0;
+    }
+
+    public String getXpAwardedExerciseIds() {
+        return xpAwardedExerciseIds;
+    }
+
+    public void setXpAwardedExerciseIds(String xpAwardedExerciseIds) {
+        this.xpAwardedExerciseIds = xpAwardedExerciseIds;
+    }
+
+    public Set<Long> getXpAwardedExercises() {
+        if (xpAwardedExerciseIds == null || xpAwardedExerciseIds.isBlank()) {
+            return new LinkedHashSet<>();
+        }
+        return Arrays.stream(xpAwardedExerciseIds.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .map(Long::valueOf)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    public boolean hasXpBeenAwardedFor(Long exerciseId) {
+        return exerciseId != null && getXpAwardedExercises().contains(exerciseId);
+    }
+
+    public void markXpAwardedFor(Long exerciseId) {
+        if (exerciseId == null) {
+            return;
+        }
+        Set<Long> awarded = getXpAwardedExercises();
+        if (awarded.add(exerciseId)) {
+            this.xpAwardedExerciseIds = awarded.stream()
+                    .map(String::valueOf)
+                    .collect(Collectors.joining(","));
+        }
+    }
+
+    /**
+     * XP is payable for this exercise only if the lesson has not been locked by
+     * a previous completion and the exercise has not paid out before.
+     */
+    public boolean isXpPayableFor(Long exerciseId) {
+        return !xpLocked && !hasXpBeenAwardedFor(exerciseId);
     }
 }
