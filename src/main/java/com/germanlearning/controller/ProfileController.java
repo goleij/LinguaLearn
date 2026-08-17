@@ -1,6 +1,6 @@
 package com.germanlearning.controller;
 
-import com.germanlearning.dto.ActivityDto;
+import com.germanlearning.dto.RecentActivityDto;
 import com.germanlearning.dto.ProfileDto;
 import com.germanlearning.dto.UserDto;
 import com.germanlearning.model.User;
@@ -33,9 +33,9 @@ public class ProfileController {
         User user = currentUserService.requireCurrentUser();
 
         // Same as ProfileView: the five most recent completed lessons
-        List<ActivityDto> recentActivity = progressService.getCompletedLessons(user.getId()).stream()
+        List<RecentActivityDto> recentActivity = progressService.getCompletedLessons(user.getId()).stream()
                 .limit(5)
-                .map(ActivityDto::from)
+                .map(RecentActivityDto::from)
                 .toList();
 
         return new ProfileDto(

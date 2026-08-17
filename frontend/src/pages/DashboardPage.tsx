@@ -1,47 +1,93 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import LevelPicker from '../components/LevelPicker';
 import { useAuth } from '../hooks/useAuth';
 import { learningService } from '../services/learningService';
-import type { CourseContent, LessonStatus } from '../types';
+import type { CefrLevel, CefrLevelInfo, CourseContent, LessonStatus } from '../types';
 
-/** Welcome text plus one card per unit with its lesson tiles. */
+const LEVEL_STORAGE_KEY = 'lingualearn.level';
+
+/** Choose a level, then work through its units and lessons. */
 export default function DashboardPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  const [levels, setLevels] = useState<CefrLevelInfo[]>([]);
+  const [level, setLevel] = useState<CefrLevel | null>(
+    (localStorage.getItem(LEVEL_STORAGE_KEY) as CefrLevel | null) ?? null,
+  );
   const [content, setContent] = useState<CourseContent | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Load the level list once, and fall back to the first level that has content
   useEffect(() => {
     learningService
-      .getDashboard()
+      .getLevels()
+      .then((available) => {
+        setLevels(available);
+        setLevel((current) => {
+          if (current && available.some((item) => item.level === current && item.lessonCount > 0)) {
+            return current;
+          }
+          return available.find((item) => item.lessonCount > 0)?.level ?? null;
+        });
+      })
+      .catch((error) => console.error('Failed to load levels', error));
+  }, []);
+
+  useEffect(() => {
+    if (!level) return;
+
+    localStorage.setItem(LEVEL_STORAGE_KEY, level);
+    setLoading(true);
+
+    learningService
+      .getDashboard(level)
       .then(setContent)
       .catch((error) => console.error('Failed to load the dashboard', error))
       .finally(() => setLoading(false));
-  }, []);
+  }, [level]);
 
   return (
     <div className="flex h-full flex-col gap-2 p-5">
       <h2 className="text-ink">Welcome back, {user?.username}!</h2>
       <p className="text-ink-muted">Continue your German learning journey</p>
 
+      <LevelPicker levels={levels} selected={level} onSelect={setLevel} />
+
       {loading && <p className="text-ink-muted">Loading…</p>}
 
-      {content?.units.map((unit) => (
-        <section key={unit.id} className="mb-5 w-full rounded-2xl bg-white p-5 shadow-unit">
-          <h3 className="text-brand-green">{unit.name}</h3>
-          {unit.description && <p className="text-ink-muted">{unit.description}</p>}
-
-          <div className="mt-4 flex flex-wrap items-center gap-2">
-            {unit.lessons.map((lesson) => (
-              <LessonTile
-                key={lesson.id}
-                lesson={lesson}
-                onOpen={() => navigate(`/lesson/${lesson.id}`)}
-              />
-            ))}
+      {!loading && content && (
+        <>
+          <div className="mb-1 flex flex-wrap items-baseline gap-2">
+            <h3 className="m-0 text-ink">{content.course.name}</h3>
+            {content.course.description && (
+              <span className="text-ink-muted">— {content.course.description}</span>
+            )}
           </div>
-        </section>
-      ))}
+
+          {content.units.map((unit) => (
+            <section key={unit.id} className="mb-5 w-full rounded-2xl bg-white p-5 shadow-unit">
+              <h3 className="text-brand-green">{unit.name}</h3>
+              {unit.description && <p className="text-ink-muted">{unit.description}</p>}
+
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                {unit.lessons.map((lesson) => (
+                  <LessonTile
+                    key={lesson.id}
+                    lesson={lesson}
+                    onOpen={() => navigate(`/lesson/${lesson.id}`)}
+                  />
+                ))}
+              </div>
+            </section>
+          ))}
+        </>
+      )}
+
+      {!loading && !content && level && (
+        <p className="text-ink-muted">No course for this level yet.</p>
+      )}
     </div>
   );
 }

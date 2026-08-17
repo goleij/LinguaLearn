@@ -1,9 +1,11 @@
 package com.germanlearning.controller;
 
+import com.germanlearning.dto.CefrLevelDto;
 import com.germanlearning.dto.CourseContentDto;
 import com.germanlearning.dto.CourseDto;
 import com.germanlearning.dto.LessonStatusDto;
 import com.germanlearning.dto.UnitDto;
+import com.germanlearning.model.CefrLevel;
 import com.germanlearning.model.Course;
 import com.germanlearning.model.Unit;
 import com.germanlearning.model.User;
@@ -14,15 +16,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 /**
- * Course listing and course content (units + lesson tiles).
+ * Level selection and course content.
  *
- * The dashboard endpoint reproduces exactly what DashboardView did: it renders
- * the first course of the catalogue.
+ * The learner starts by choosing a CEFR level; everything below that is the
+ * courses of that level with their units and lesson tiles.
  */
 @RestController
 @RequestMapping("/api")
@@ -36,9 +40,34 @@ public class CourseController {
         this.currentUserService = currentUserService;
     }
 
+    /** Every CEFR level with how much content it currently holds. */
+    @GetMapping("/levels")
+    public List<CefrLevelDto> getLevels() {
+        List<Course> courses = lessonService.getAllCourses();
+        List<CefrLevelDto> levels = new ArrayList<>();
+
+        for (CefrLevel level : CefrLevel.values()) {
+            List<Course> coursesOfLevel = courses.stream()
+                    .filter(course -> course.getLevel() == level)
+                    .toList();
+
+            int lessonCount = coursesOfLevel.stream()
+                    .mapToInt(course -> lessonService.getAllLessonsOrdered(course.getId()).size())
+                    .sum();
+
+            levels.add(CefrLevelDto.from(level, coursesOfLevel.size(), lessonCount));
+        }
+
+        return levels;
+    }
+
+    /** Courses, optionally narrowed to one level. */
     @GetMapping("/courses")
-    public List<CourseDto> getCourses() {
-        return lessonService.getAllCourses().stream().map(CourseDto::from).toList();
+    public List<CourseDto> getCourses(@RequestParam(value = "level", required = false) CefrLevel level) {
+        return lessonService.getAllCourses().stream()
+                .filter(course -> level == null || course.getLevel() == level)
+                .map(CourseDto::from)
+                .toList();
     }
 
     @GetMapping("/courses/{courseId}")
@@ -48,12 +77,21 @@ public class CourseController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    /** The dashboard: the first course with its units and lesson statuses. */
+    /**
+     * The dashboard: the first course of the requested level, or of the first
+     * level that has content when none is given.
+     */
     @GetMapping("/dashboard")
-    public ResponseEntity<CourseContentDto> getDashboard() {
-        Optional<Course> firstCourse = lessonService.getAllCourses().stream().findFirst();
-        return firstCourse
-                .map(course -> ResponseEntity.ok(buildContent(course)))
+    public ResponseEntity<CourseContentDto> getDashboard(
+            @RequestParam(value = "level", required = false) CefrLevel level) {
+        List<Course> courses = lessonService.getAllCourses();
+
+        Optional<Course> course = courses.stream()
+                .filter(candidate -> level == null || candidate.getLevel() == level)
+                .findFirst();
+
+        return course
+                .map(found -> ResponseEntity.ok(buildContent(found)))
                 .orElseGet(() -> ResponseEntity.ok(null));
     }
 

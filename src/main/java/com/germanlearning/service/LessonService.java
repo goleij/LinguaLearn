@@ -16,18 +16,15 @@ public class LessonService {
     private final UnitRepository unitRepository;
     private final CourseRepository courseRepository;
     private final ProgressRepository progressRepository;
-    private final ExerciseRepository exerciseRepository;
 
     public LessonService(LessonRepository lessonRepository,
                          UnitRepository unitRepository,
                          CourseRepository courseRepository,
-                         ProgressRepository progressRepository,
-                         ExerciseRepository exerciseRepository) {
+                         ProgressRepository progressRepository) {
         this.lessonRepository = lessonRepository;
         this.unitRepository = unitRepository;
         this.courseRepository = courseRepository;
         this.progressRepository = progressRepository;
-        this.exerciseRepository = exerciseRepository;
     }
 
     public List<Course> getAllCourses() {
@@ -48,14 +45,6 @@ public class LessonService {
 
     public Optional<Lesson> getLessonById(Long lessonId) {
         return lessonRepository.findById(lessonId);
-    }
-
-    public Optional<Lesson> getLessonWithExercises(Long lessonId) {
-        return lessonRepository.findByIdWithExercises(lessonId);
-    }
-
-    public List<Exercise> getExercisesForLesson(Long lessonId) {
-        return exerciseRepository.findByLessonIdOrderByIdAsc(lessonId);
     }
 
     public boolean isLessonUnlocked(Long userId, Long lessonId) {

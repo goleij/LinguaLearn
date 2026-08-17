@@ -2,14 +2,17 @@ package com.germanlearning.dto;
 
 import com.germanlearning.service.ProgressService.LessonCompletionResult;
 
-/** The completion screen data, straight from ProgressService. */
+/** The result screen data, straight from ProgressService. */
 public record LessonCompletionDto(
         boolean passed,
         boolean practiceMode,
         boolean completed,
+        boolean hasCheckpoint,
         double scorePercentage,
         int correctAnswers,
         int totalAnswers,
+        int checkpointCorrectAnswers,
+        int checkpointTotalAnswers,
         int lessonXpEarned,
         int userTotalXp,
         double passThreshold) {
@@ -19,9 +22,12 @@ public record LessonCompletionDto(
                 result.isPassed(),
                 result.isPracticeMode(),
                 result.isCompleted(),
+                result.isHasCheckpoint(),
                 result.getScorePercentage(),
                 result.getCorrectAnswers(),
                 result.getTotalAnswers(),
+                result.getCheckpointCorrectAnswers(),
+                result.getCheckpointTotalAnswers(),
                 result.getLessonXpEarned(),
                 result.getUserTotalXp(),
                 passThreshold);

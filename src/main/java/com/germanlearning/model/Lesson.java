@@ -23,13 +23,18 @@ public class Lesson {
     @Column(length = 500)
     private String description;
 
+    /** CEFR level of this lesson; falls back to the course level when unset. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "cefr_level")
+    private CefrLevel cefrLevel;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "unit_id", nullable = false)
     private Unit unit;
 
     @OneToMany(mappedBy = "lesson", cascade = CascadeType.ALL, orphanRemoval = true)
-    @OrderBy("id ASC")
-    private List<Exercise> exercises = new ArrayList<>();
+    @OrderBy("position ASC")
+    private List<LessonActivity> activities = new ArrayList<>();
 
     public Lesson() {
     }
@@ -72,6 +77,22 @@ public class Lesson {
         this.description = description;
     }
 
+    public CefrLevel getCefrLevel() {
+        return cefrLevel;
+    }
+
+    public void setCefrLevel(CefrLevel cefrLevel) {
+        this.cefrLevel = cefrLevel;
+    }
+
+    /** The lesson level, or the course level when the lesson does not set one. */
+    public CefrLevel resolveCefrLevel() {
+        if (cefrLevel != null) {
+            return cefrLevel;
+        }
+        return unit != null && unit.getCourse() != null ? unit.getCourse().getLevel() : null;
+    }
+
     public Unit getUnit() {
         return unit;
     }
@@ -80,20 +101,22 @@ public class Lesson {
         this.unit = unit;
     }
 
-    public List<Exercise> getExercises() {
-        return exercises;
+    public List<LessonActivity> getActivities() {
+        return activities;
     }
 
-    public void setExercises(List<Exercise> exercises) {
-        this.exercises = exercises;
+    public void setActivities(List<LessonActivity> activities) {
+        this.activities = activities;
     }
 
-    public void addExercise(Exercise exercise) {
-        exercises.add(exercise);
-        exercise.setLesson(this);
+    /** Appends an activity, giving it the next free position. */
+    public void addActivity(LessonActivity activity) {
+        activity.setPosition(activities.size());
+        activities.add(activity);
+        activity.setLesson(this);
     }
 
-    public int getTotalExercises() {
-        return exercises.size();
+    public int getTotalActivities() {
+        return activities.size();
     }
 }

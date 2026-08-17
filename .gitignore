@@ -1,9 +1,27 @@
+# Maven build output
 target/
+
+# Local SQLite database
 *.db
 *.db-journal
-frontend/generated/
+
+# Frontend build output and caches
+frontend/dist/
 node_modules/
+.vite/
+*.tsbuildinfo
+
+# Local environment overrides
+.env*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editors / OS
 .idea/
 .vscode/
 .DS_Store
 Thumbs.db
+
+.claude/

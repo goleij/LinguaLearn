@@ -21,6 +21,8 @@ public interface ProgressRepository extends JpaRepository<Progress, Long> {
 
     List<Progress> findByUserId(Long userId);
 
+    List<Progress> findByLessonId(Long lessonId);
+
     @org.springframework.data.jpa.repository.EntityGraph(attributePaths = { "lesson" })
     List<Progress> findByUserIdAndCompleted(Long userId, boolean completed);
 

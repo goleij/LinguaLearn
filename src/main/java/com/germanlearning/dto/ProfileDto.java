@@ -6,5 +6,5 @@ import java.util.List;
 public record ProfileDto(
         UserDto user,
         int completedLessonsCount,
-        List<ActivityDto> recentActivity) {
+        List<RecentActivityDto> recentActivity) {
 }

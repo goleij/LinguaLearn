@@ -21,12 +21,26 @@ public class Course {
     @Column(nullable = false)
     private String language;
 
-    @NotBlank
+    /**
+     * Stored in the existing "level" column; the previous values ("A1") are
+     * exactly the enum names, so no data migration is needed.
+     */
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String level;
+    private CefrLevel level;
 
     @Column(length = 500)
     private String description;
+
+    /**
+     * Which revision of the authored content this course currently holds.
+     *
+     * Lets the seeder tell "already installed" from "installed, but an older
+     * version than the code now defines", which is what decides whether a
+     * course gets refreshed on start-up. Null means it predates versioning.
+     */
+    @Column(name = "content_version")
+    private Integer contentVersion;
 
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("orderIndex ASC")
@@ -35,7 +49,7 @@ public class Course {
     public Course() {
     }
 
-    public Course(String name, String language, String level, String description) {
+    public Course(String name, String language, CefrLevel level, String description) {
         this.name = name;
         this.language = language;
         this.level = level;
@@ -66,12 +80,20 @@ public class Course {
         this.language = language;
     }
 
-    public String getLevel() {
+    public CefrLevel getLevel() {
         return level;
     }
 
-    public void setLevel(String level) {
+    public void setLevel(CefrLevel level) {
         this.level = level;
+    }
+
+    public Integer getContentVersion() {
+        return contentVersion;
+    }
+
+    public void setContentVersion(Integer contentVersion) {
+        this.contentVersion = contentVersion;
     }
 
     public String getDescription() {

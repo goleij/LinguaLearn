@@ -22,6 +22,6 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
     @Query("SELECT l FROM Lesson l WHERE l.unit.id = :unitId AND l.orderIndex < :orderIndex ORDER BY l.orderIndex DESC")
     Optional<Lesson> findPreviousLesson(@Param("unitId") Long unitId, @Param("orderIndex") int orderIndex);
     
-    @Query("SELECT l FROM Lesson l JOIN FETCH l.exercises WHERE l.id = :lessonId")
-    Optional<Lesson> findByIdWithExercises(@Param("lessonId") Long lessonId);
+    @Query("SELECT l FROM Lesson l JOIN FETCH l.activities WHERE l.id = :lessonId")
+    Optional<Lesson> findByIdWithActivities(@Param("lessonId") Long lessonId);
 }

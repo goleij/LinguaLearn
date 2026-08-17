@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { learningService } from '../services/learningService';
-import type { Activity, Profile } from '../types';
+import type { RecentActivity, Profile } from '../types';
 
 /** Avatar, stat cards and the recent activity list. */
 export default function ProfilePage() {
@@ -52,13 +52,13 @@ export default function ProfilePage() {
         </div>
 
         <section className="mt-[30px] w-full">
-          <h3 className="text-ink">Recent Activity</h3>
+          <h3 className="text-ink">Recent RecentActivity</h3>
 
           {recentActivity.length === 0 ? (
             <p className="text-ink-muted">No completed lessons yet. Start learning!</p>
           ) : (
             recentActivity.map((activity) => (
-              <ActivityRow key={activity.lessonId} activity={activity} />
+              <RecentActivityRow key={activity.lessonId} activity={activity} />
             ))
           )}
         </section>
@@ -78,7 +78,7 @@ function StatCard({ label, value, color }: { label: string; value: string; color
   );
 }
 
-function ActivityRow({ activity }: { activity: Activity }) {
+function RecentActivityRow({ activity }: { activity: RecentActivity }) {
   const date = activity.completedAt
     ? new Date(activity.completedAt).toLocaleDateString('en-US', {
         month: 'short',

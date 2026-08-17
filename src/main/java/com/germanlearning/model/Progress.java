@@ -56,12 +56,22 @@ public class Progress {
     private int currentStreak = 0;
 
     /**
-     * Ids of the exercises that have already paid out XP for this lesson,
-     * stored comma separated. Used to make XP awarding idempotent per exercise
+     * Answers given in the checkpoint phase. These decide completion, so a
+     * mistake made while practising cannot fail the lesson.
+     */
+    @Column(name = "checkpoint_correct_answers", columnDefinition = "integer not null default 0")
+    private int checkpointCorrectAnswers = 0;
+
+    @Column(name = "checkpoint_total_answers", columnDefinition = "integer not null default 0")
+    private int checkpointTotalAnswers = 0;
+
+    /**
+     * Ids of the activities that have already paid out XP for this lesson,
+     * stored comma separated. Used to make XP awarding idempotent per activity
      * so retrying a lesson cannot farm unlimited XP.
      */
-    @Column(name = "xp_awarded_exercise_ids", length = 2000)
-    private String xpAwardedExerciseIds;
+    @Column(name = "xp_awarded_activity_ids", length = 2000)
+    private String xpAwardedActivityIds;
 
     private LocalDateTime completedAt;
 
@@ -203,9 +213,13 @@ public class Progress {
     }
 
     public void updateBestScore() {
-        double currentScore = getScorePercentage();
-        if (currentScore > this.bestScore) {
-            this.bestScore = currentScore;
+        updateBestScore(getScorePercentage());
+    }
+
+    /** Records the score that decided the attempt, when it beats the old best. */
+    public void updateBestScore(double score) {
+        if (score > this.bestScore) {
+            this.bestScore = score;
         }
     }
 
@@ -225,46 +239,86 @@ public class Progress {
         this.currentStreak = 0;
     }
 
-    public String getXpAwardedExerciseIds() {
-        return xpAwardedExerciseIds;
+    public String getXpAwardedActivityIds() {
+        return xpAwardedActivityIds;
     }
 
-    public void setXpAwardedExerciseIds(String xpAwardedExerciseIds) {
-        this.xpAwardedExerciseIds = xpAwardedExerciseIds;
+    public void setXpAwardedActivityIds(String xpAwardedActivityIds) {
+        this.xpAwardedActivityIds = xpAwardedActivityIds;
     }
 
-    public Set<Long> getXpAwardedExercises() {
-        if (xpAwardedExerciseIds == null || xpAwardedExerciseIds.isBlank()) {
+    public Set<Long> getXpAwardedActivities() {
+        if (xpAwardedActivityIds == null || xpAwardedActivityIds.isBlank()) {
             return new LinkedHashSet<>();
         }
-        return Arrays.stream(xpAwardedExerciseIds.split(","))
+        return Arrays.stream(xpAwardedActivityIds.split(","))
                 .map(String::trim)
                 .filter(s -> !s.isEmpty())
                 .map(Long::valueOf)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
-    public boolean hasXpBeenAwardedFor(Long exerciseId) {
-        return exerciseId != null && getXpAwardedExercises().contains(exerciseId);
+    public boolean hasXpBeenAwardedFor(Long activityId) {
+        return activityId != null && getXpAwardedActivities().contains(activityId);
     }
 
-    public void markXpAwardedFor(Long exerciseId) {
-        if (exerciseId == null) {
+    public void markXpAwardedFor(Long activityId) {
+        if (activityId == null) {
             return;
         }
-        Set<Long> awarded = getXpAwardedExercises();
-        if (awarded.add(exerciseId)) {
-            this.xpAwardedExerciseIds = awarded.stream()
+        Set<Long> awarded = getXpAwardedActivities();
+        if (awarded.add(activityId)) {
+            this.xpAwardedActivityIds = awarded.stream()
                     .map(String::valueOf)
                     .collect(Collectors.joining(","));
         }
     }
 
     /**
-     * XP is payable for this exercise only if the lesson has not been locked by
-     * a previous completion and the exercise has not paid out before.
+     * XP is payable for this activity only if the lesson has not been locked by
+     * a previous completion and the activity has not paid out before.
      */
-    public boolean isXpPayableFor(Long exerciseId) {
-        return !xpLocked && !hasXpBeenAwardedFor(exerciseId);
+    public boolean isXpPayableFor(Long activityId) {
+        return !xpLocked && !hasXpBeenAwardedFor(activityId);
+    }
+
+    public int getCheckpointCorrectAnswers() {
+        return checkpointCorrectAnswers;
+    }
+
+    public void setCheckpointCorrectAnswers(int checkpointCorrectAnswers) {
+        this.checkpointCorrectAnswers = checkpointCorrectAnswers;
+    }
+
+    public int getCheckpointTotalAnswers() {
+        return checkpointTotalAnswers;
+    }
+
+    public void setCheckpointTotalAnswers(int checkpointTotalAnswers) {
+        this.checkpointTotalAnswers = checkpointTotalAnswers;
+    }
+
+    public void recordCheckpointAnswer(boolean correct) {
+        this.checkpointTotalAnswers++;
+        if (correct) {
+            this.checkpointCorrectAnswers++;
+        }
+    }
+
+    public double getCheckpointScorePercentage() {
+        if (checkpointTotalAnswers == 0) {
+            return 0.0;
+        }
+        return (double) checkpointCorrectAnswers / checkpointTotalAnswers * 100.0;
+    }
+
+    /**
+     * Completion rule for a lesson that has a checkpoint: the checkpoint must
+     * have been attempted and must reach the same threshold the lesson score
+     * always had to reach.
+     */
+    public boolean hasPassedCheckpoint() {
+        return checkpointTotalAnswers > 0
+                && getCheckpointScorePercentage() >= PASS_THRESHOLD_PERCENTAGE;
     }
 }
