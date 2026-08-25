@@ -129,7 +129,7 @@ export default function LessonPage() {
   );
 
   if (loading) {
-    return <div className="p-5 text-ink-muted">Loading…</div>;
+    return <div className="p-3 text-ink-muted sm:p-5">Loading…</div>;
   }
 
   if (!lesson) {
@@ -138,7 +138,7 @@ export default function LessonPage() {
 
   if (lesson.activities.length === 0) {
     return (
-      <div className="flex h-full flex-col items-center p-5">
+      <div className="flex h-full flex-col items-center p-3 sm:p-5">
         <div className="flex flex-col items-center rounded-[20px] bg-white p-5">
           <h2 className="text-ink">No activities available for this lesson</h2>
           <button type="button" className="btn-secondary mt-4" onClick={() => navigate('/')}>
@@ -155,17 +155,17 @@ export default function LessonPage() {
   const progress = Math.min(index / total, 1);
 
   return (
-    <div className="flex h-full flex-col items-center p-5">
-      <div className="flex w-full max-w-[600px] flex-col gap-4 rounded-[20px] bg-white p-5 shadow-card">
+    <div className="flex h-full flex-col items-center p-3 sm:p-5">
+      <div className="flex w-full max-w-[600px] flex-col gap-4 rounded-[20px] bg-white p-4 shadow-card sm:p-5">
         <div className="flex w-full items-center gap-3">
           <button
             type="button"
             onClick={() => navigate('/')}
-            className="rounded-[10px] bg-surface-grey px-4 py-2 text-ink transition hover:brightness-95"
+            className="shrink-0 rounded-[10px] bg-surface-grey px-3 py-2 text-ink transition hover:brightness-95 sm:px-4"
           >
             ← Back
           </button>
-          <h2 className="flex-1 text-brand-green">{lesson.name}</h2>
+          <h2 className="m-0 min-w-0 flex-1 text-lg text-brand-green sm:text-2xl">{lesson.name}</h2>
           {lesson.cefrLevel && (
             <span className="rounded-[20px] bg-brand-blue px-3 py-1 text-xs font-bold text-white">
               {lesson.cefrLevel}
@@ -302,7 +302,7 @@ function FeedbackCard({ result, onContinue }: { result: AnswerResult; onContinue
       <button
         type="button"
         onClick={onContinue}
-        className={`mt-3 rounded-xl px-10 py-4 font-bold text-white transition ${
+        className={`mt-3 w-full rounded-xl px-6 py-4 font-bold text-white transition sm:w-auto sm:px-10 ${
           correct ? 'bg-brand-green' : 'bg-brand-blue'
         }`}
       >
@@ -394,18 +394,18 @@ function ResultCard({
           : `You need ${Math.round(completion.passThreshold)}% in the checkpoint to pass. Try again!`}
       </p>
 
-      <div className="mt-2 flex gap-2">
+      <div className="mt-2 flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
         <button
           type="button"
           onClick={onRetry}
-          className="rounded-xl bg-brand-blue px-[30px] py-[15px] font-medium text-white transition"
+          className="w-full rounded-xl bg-brand-blue px-6 py-[15px] font-medium text-white transition sm:w-auto sm:px-[30px]"
         >
           Practice Again
         </button>
         <button
           type="button"
           onClick={onHome}
-          className="rounded-xl bg-brand-green px-[30px] py-[15px] font-medium text-white transition"
+          className="w-full rounded-xl bg-brand-green px-6 py-[15px] font-medium text-white transition sm:w-auto sm:px-[30px]"
         >
           Back to Dashboard
         </button>

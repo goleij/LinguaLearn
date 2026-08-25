@@ -43,7 +43,7 @@ export default function MatchPairsActivity({
 
   const buttonClasses = (state: 'idle' | 'selected' | 'matched') => {
     const base =
-      'w-[180px] cursor-pointer rounded-xl p-4 text-center font-medium transition-all duration-200';
+      'w-full cursor-pointer rounded-xl p-3 text-center font-medium transition-all duration-200 sm:p-4';
     if (state === 'selected') return `${base} bg-brand-blue text-white`;
     if (state === 'matched') return `${base} bg-brand-green text-white`;
     return `${base} bg-surface-grey text-ink`;
@@ -56,7 +56,7 @@ export default function MatchPairsActivity({
       <p className="text-lg text-ink-muted">{activity.prompt}</p>
 
       <div className="flex w-full justify-center gap-2">
-        <div className="flex w-[200px] flex-col items-center gap-2">
+        <div className="flex w-full min-w-0 max-w-[200px] flex-1 flex-col items-center gap-2">
           {leftItems.map((item) => (
             <div
               key={item}
@@ -73,7 +73,7 @@ export default function MatchPairsActivity({
           ))}
         </div>
 
-        <div className="flex w-[200px] flex-col items-center gap-2">
+        <div className="flex w-full min-w-0 max-w-[200px] flex-1 flex-col items-center gap-2">
           {rightItems.map((item) => (
             <div
               key={item}

@@ -14,13 +14,13 @@ export default function LevelPicker({
   onSelect: (level: CefrLevel) => void;
 }) {
   return (
-    <section className="mb-5 w-full rounded-2xl bg-white p-5 shadow-unit">
+    <section className="mb-5 w-full rounded-2xl bg-white p-4 shadow-unit sm:p-5">
       <h3 className="mt-0 text-brand-green">Choose your level</h3>
       <p className="mt-0 text-ink-muted">
         Each level builds on the one before it — same situations, more German.
       </p>
 
-      <div className="mt-4 flex flex-wrap gap-3">
+      <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
         {levels.map((level) => {
           const active = level.level === selected;
           const available = level.lessonCount > 0;
@@ -31,7 +31,7 @@ export default function LevelPicker({
               type="button"
               disabled={!available}
               onClick={() => onSelect(level.level)}
-              className={`flex min-w-[150px] flex-1 flex-col items-start rounded-2xl border-2 p-4 text-left transition ${
+              className={`flex flex-col items-start rounded-2xl border-2 p-3 text-left transition sm:p-4 ${
                 active
                   ? 'border-brand-green bg-brand-green/10'
                   : available

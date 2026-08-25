@@ -16,11 +16,11 @@ export default function ProfilePage() {
   }, []);
 
   if (loading) {
-    return <div className="p-5 text-ink-muted">Loading…</div>;
+    return <div className="p-3 text-ink-muted sm:p-5">Loading…</div>;
   }
 
   if (!profile) {
-    return <div className="p-5 text-ink-muted">Profile unavailable</div>;
+    return <div className="p-3 text-ink-muted sm:p-5">Profile unavailable</div>;
   }
 
   const { user, completedLessonsCount, recentActivity } = profile;
@@ -30,8 +30,8 @@ export default function ProfilePage() {
   });
 
   return (
-    <div className="flex h-full flex-col items-center p-5">
-      <div className="flex w-full max-w-[600px] flex-col items-center rounded-[20px] bg-white p-5 shadow-card">
+    <div className="flex h-full flex-col items-center p-3 sm:p-5">
+      <div className="flex w-full max-w-[600px] flex-col items-center rounded-[20px] bg-white p-4 shadow-card sm:p-5">
         <div className="flex h-[100px] w-[100px] items-center justify-center rounded-full bg-brand-green">
           <span className="text-[40px] font-bold text-white">
             {user.username.charAt(0).toUpperCase()}
@@ -41,7 +41,7 @@ export default function ProfilePage() {
         <h2 className="mb-[5px] mt-[10px] text-ink">{user.username}</h2>
         <p className="m-0 text-ink-muted">{user.email}</p>
 
-        <div className="mt-5 flex w-full justify-center gap-2">
+        <div className="mt-5 flex w-full flex-wrap justify-center gap-2">
           <StatCard label="Total XP" value={String(user.totalXp)} color="bg-brand-yellow" />
           <StatCard label="Streak" value={`${user.currentStreak} days`} color="bg-brand-orange" />
           <StatCard
@@ -71,7 +71,7 @@ export default function ProfilePage() {
 
 function StatCard({ label, value, color }: { label: string; value: string; color: string }) {
   return (
-    <div className={`flex w-[120px] flex-col items-center rounded-2xl p-4 ${color}`}>
+    <div className={`flex min-w-[96px] flex-1 basis-[96px] flex-col items-center rounded-2xl p-4 sm:max-w-[140px] ${color}`}>
       <span className="text-2xl font-bold text-white">{value}</span>
       <span className="text-xs text-white/80">{label}</span>
     </div>

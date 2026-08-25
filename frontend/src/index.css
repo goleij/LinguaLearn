@@ -43,6 +43,21 @@
   p {
     margin: 0.5em 0;
   }
+
+  /* Headings step down on phones; the desktop sizes above are Lumo's */
+  @media (max-width: 640px) {
+    h1 {
+      font-size: 2rem;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+    }
+
+    h3 {
+      font-size: 1.2rem;
+    }
+  }
 }
 
 @layer components {

@@ -34,7 +34,7 @@ export default function TranslationActivity({
       <p className="text-center text-2xl font-bold text-brand-blue">{activity.prompt}</p>
 
       <input
-        className="field-input max-w-[420px] text-center text-lg"
+        className="field-input w-full max-w-[420px] text-center text-lg"
         placeholder="Type your translation"
         value={answer}
         onChange={(event) => setAnswer(event.target.value)}

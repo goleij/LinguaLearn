@@ -49,7 +49,7 @@ export default function DashboardPage() {
   }, [level]);
 
   return (
-    <div className="flex h-full flex-col gap-2 p-5">
+    <div className="flex h-full flex-col gap-2 p-3 sm:p-5">
       <h2 className="text-ink">Welcome back, {user?.username}!</h2>
       <p className="text-ink-muted">Continue your German learning journey</p>
 
@@ -67,7 +67,7 @@ export default function DashboardPage() {
           </div>
 
           {content.units.map((unit) => (
-            <section key={unit.id} className="mb-5 w-full rounded-2xl bg-white p-5 shadow-unit">
+            <section key={unit.id} className="mb-5 w-full rounded-2xl bg-white p-4 shadow-unit sm:p-5">
               <h3 className="text-brand-green">{unit.name}</h3>
               {unit.description && <p className="text-ink-muted">{unit.description}</p>}
 

@@ -60,7 +60,7 @@ export default function RegisterPage() {
 
   return (
     <div className="flex min-h-full items-center justify-center bg-auth-gradient p-5">
-      <div className="w-full max-w-[400px] rounded-[20px] bg-white p-10 shadow-card">
+      <div className="w-full max-w-[400px] rounded-[20px] bg-white p-6 shadow-card sm:p-10">
         <div className="flex flex-col items-center">
           <h1 className="mb-[10px] text-center text-brand-green">Create Account</h1>
           <p className="mb-5 text-center text-ink-muted">Start your German learning journey!</p>

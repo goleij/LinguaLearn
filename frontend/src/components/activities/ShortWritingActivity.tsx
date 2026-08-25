@@ -51,7 +51,7 @@ export default function ShortWritingActivity({
       )}
 
       <textarea
-        className="field-input min-h-[130px] max-w-[460px] resize-y text-lg"
+        className="field-input min-h-[130px] w-full max-w-[460px] resize-y text-lg"
         placeholder="Write in German…"
         value={text}
         onChange={(event) => setText(event.target.value)}

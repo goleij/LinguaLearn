@@ -38,7 +38,7 @@ export default function FillBlankActivity({
         {parts[0] && <span className="text-2xl text-ink">{parts[0]}</span>}
 
         <input
-          className="w-[150px] rounded-lg bg-surface-grey px-3 py-2 text-center text-2xl text-ink outline-none focus:ring-2 focus:ring-brand-blue/40"
+          className="w-[110px] rounded-lg bg-surface-grey sm:w-[150px] px-3 py-2 text-center text-2xl text-ink outline-none focus:ring-2 focus:ring-brand-blue/40"
           placeholder="..."
           value={answer}
           onChange={(event) => setAnswer(event.target.value)}
