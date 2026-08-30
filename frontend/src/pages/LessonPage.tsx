@@ -45,9 +45,9 @@ export default function LessonPage() {
         }
 
         if (detail.activities.length > 0) {
-          // A fresh run: the service clears the per-attempt counters, streak included
-          await learningService.startAttempt(id);
-          setUser((current) => (current ? { ...current, currentStreak: 0 } : current));
+          // A fresh run: the service clears the per-attempt counters and counts
+          // the learner as active today, which can move their daily streak
+          setUser(await learningService.startAttempt(id));
         }
 
         if (active) setLesson(detail);
@@ -89,12 +89,11 @@ export default function LessonPage() {
         const activity = lesson.activities[index];
         const result = await learningService.submitAnswer(id, activity.id, answer);
         setFeedback(result);
-        // Keep the navbar badges in sync with what was just stored
-        setUser((current) =>
-          current
-            ? { ...current, totalXp: result.userTotalXp, currentStreak: result.currentStreak }
-            : current,
-        );
+        // Keep the navbar XP badge in sync with what was just stored. The
+        // streak beside it is the daily one, which a single answer never
+        // changes; result.currentStreak counts correct answers in this attempt
+        // and is what the XP bonus is calculated from.
+        setUser((current) => (current ? { ...current, totalXp: result.userTotalXp } : current));
       } catch (error) {
         console.error('Failed to submit the answer', error);
         show('Could not submit your answer. Please try again.', { position: 'middle' });
@@ -111,8 +110,7 @@ export default function LessonPage() {
   };
 
   const restart = async () => {
-    await learningService.startAttempt(id);
-    setUser((current) => (current ? { ...current, currentStreak: 0 } : current));
+    setUser(await learningService.startAttempt(id));
     setIndex(0);
     setFeedback(null);
     setCompletion(null);

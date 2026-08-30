@@ -9,6 +9,7 @@ import type {
   LessonCompletion,
   LessonDetail,
   Profile,
+  User,
 } from '../types';
 
 export const learningService = {
@@ -26,8 +27,11 @@ export const learningService = {
 
   getLesson: (lessonId: number) => api.get<LessonDetail>(`/lessons/${lessonId}`),
 
-  /** Clears the per-attempt counters before a run. */
-  startAttempt: (lessonId: number) => api.post<void>(`/lessons/${lessonId}/attempt`),
+  /**
+   * Clears the per-attempt counters before a run, and counts the learner as
+   * active today. Returns the user, whose daily streak may have just moved.
+   */
+  startAttempt: (lessonId: number) => api.post<User>(`/lessons/${lessonId}/attempt`),
 
   submitAnswer: (lessonId: number, activityId: number, answer: string) =>
     api.post<AnswerResult>(`/lessons/${lessonId}/activities/${activityId}/answer`, { answer }),

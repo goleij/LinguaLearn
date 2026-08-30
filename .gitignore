@@ -11,6 +11,15 @@ node_modules/
 .vite/
 *.tsbuildinfo
 
+# Playwright output (reports, traces, screenshots, downloaded browsers)
+frontend/test-results/
+frontend/playwright-report/
+frontend/blob-report/
+frontend/.playwright/
+
+# Vitest coverage
+frontend/coverage/
+
 # Local environment overrides
 .env*.local
 

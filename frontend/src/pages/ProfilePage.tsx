@@ -43,7 +43,11 @@ export default function ProfilePage() {
 
         <div className="mt-5 flex w-full flex-wrap justify-center gap-2">
           <StatCard label="Total XP" value={String(user.totalXp)} color="bg-brand-yellow" />
-          <StatCard label="Streak" value={`${user.currentStreak} days`} color="bg-brand-orange" />
+          <StatCard
+            label="Streak"
+            value={`${user.currentStreak} ${user.currentStreak === 1 ? 'day' : 'days'}`}
+            color="bg-brand-orange"
+          />
           <StatCard
             label="Completed"
             value={`${completedLessonsCount} lessons`}
