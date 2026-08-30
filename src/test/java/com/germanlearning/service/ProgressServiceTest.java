@@ -107,8 +107,10 @@ class ProgressServiceTest {
                 new MatchPairsGrader(),
                 new ShortWritingGrader()));
 
+        // The daily streak is a separate concern with its own tests; here it
+        // only has to not interfere with the per-attempt counters
         progressService = new ProgressService(progressRepository, userRepository, lessonRepository,
-                attemptRepository, activityService, new ScoreService());
+                attemptRepository, activityService, new ScoreService(), mock(UserService.class));
     }
 
     // ------------------------------------------------------------- fixtures

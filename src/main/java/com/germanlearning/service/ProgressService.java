@@ -43,19 +43,22 @@ public class ProgressService {
     private final ActivityAttemptRepository attemptRepository;
     private final ActivityService activityService;
     private final ScoreService scoreService;
+    private final UserService userService;
 
     public ProgressService(ProgressRepository progressRepository,
             UserRepository userRepository,
             LessonRepository lessonRepository,
             ActivityAttemptRepository attemptRepository,
             ActivityService activityService,
-            ScoreService scoreService) {
+            ScoreService scoreService,
+            UserService userService) {
         this.progressRepository = progressRepository;
         this.userRepository = userRepository;
         this.lessonRepository = lessonRepository;
         this.attemptRepository = attemptRepository;
         this.activityService = activityService;
         this.scoreService = scoreService;
+        this.userService = userService;
     }
 
     public Progress getOrCreateProgress(Long userId, Long lessonId) {
@@ -78,8 +81,13 @@ public class ProgressService {
      * so the score always reflects the current run, while everything earned
      * before (XP, completion, best score, activities that already paid out) is
      * kept.
+     *
+     * This is also the moment the learner is counted as active today, which is
+     * what their daily streak is built from.
      */
     public Progress startLessonAttempt(Long userId, Long lessonId) {
+        userService.updateStreak(userId);
+
         Progress progress = getOrCreateProgress(userId, lessonId);
         progress.setCorrectAnswers(0);
         progress.setTotalAnswers(0);

@@ -34,6 +34,14 @@ public class UserService {
         return userRepository.findByUsername(username);
     }
 
+    /**
+     * The daily streak: how many days in a row the learner has come back.
+     *
+     * Called whenever a lesson attempt is started, so the streak follows actual
+     * learning rather than how long a session happened to stay open. Coming
+     * back twice on the same day does not extend it, and missing a day starts
+     * it over at one.
+     */
     public User updateStreak(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
@@ -43,12 +51,17 @@ public class UserService {
                 ? user.getLastActiveAt().toLocalDate()
                 : null;
 
-        if (lastActive == null) {
-            user.setCurrentStreak(1);
-        } else if (lastActive.equals(today.minusDays(1))) {
+        if (today.equals(lastActive)) {
+            // Already counted today. A brand new account is created with
+            // lastActiveAt set to now, so without this its very first day would
+            // fall through here and leave the streak at zero until tomorrow.
+            if (user.getCurrentStreak() == 0) {
+                user.setCurrentStreak(1);
+            }
+        } else if (today.minusDays(1).equals(lastActive)) {
             user.incrementStreak();
-        } else if (!lastActive.equals(today)) {
-            user.resetStreak();
+        } else {
+            // Either the first day ever, or a day was missed
             user.setCurrentStreak(1);
         }
 

@@ -6,6 +6,7 @@ import com.germanlearning.dto.ErrorResponse;
 import com.germanlearning.dto.LessonActivityDto;
 import com.germanlearning.dto.LessonCompletionDto;
 import com.germanlearning.dto.LessonDetailDto;
+import com.germanlearning.dto.UserDto;
 import com.germanlearning.model.ActivityPhase;
 import com.germanlearning.model.Lesson;
 import com.germanlearning.model.LessonActivity;
@@ -88,7 +89,14 @@ public class LessonController {
                 activities.stream().map(LessonActivityDto::from).toList()));
     }
 
-    /** Starts a fresh attempt: clears the per-attempt counters. */
+    /**
+     * Starts a fresh attempt: clears the per-attempt counters, and counts the
+     * learner as active today.
+     *
+     * Returns the user because that daily streak may have just moved, and the
+     * navbar shows it. Reading it back rather than reusing the instance above
+     * keeps the rule that the client is only ever handed stored values.
+     */
     @PostMapping("/{lessonId}/attempt")
     public ResponseEntity<?> startAttempt(@PathVariable Long lessonId) {
         User user = currentUserService.requireCurrentUser();
@@ -97,7 +105,7 @@ public class LessonController {
         }
 
         progressService.startLessonAttempt(user.getId(), lessonId);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(UserDto.from(currentUserService.requireCurrentUser()));
     }
 
     @PostMapping("/{lessonId}/activities/{activityId}/answer")
