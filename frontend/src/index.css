@@ -11,52 +11,71 @@
 
   body {
     margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
-      sans-serif;
+    font-family: theme('fontFamily.sans');
     font-size: 1rem;
     line-height: 1.5;
     color: #3c3c3c;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /*
+   * Headings use the display face and tighten as they grow: at 2.5rem the
+   * default tracking of a geometric sans looks loose, which is most of what
+   * makes a heading read as "unstyled".
+   */
+  h1,
+  h2,
+  h3 {
+    font-family: theme('fontFamily.display');
+    font-weight: 700;
+    line-height: 1.15;
+    margin: 0.5em 0 0.25em;
+    /*
+     * Spread a wrapping heading evenly instead of letting the last word drop
+     * alone onto its own line. This is a hint, not a promise: browsers without
+     * it fall back to normal wrapping, which is why headings are also bounded
+     * by a max-width in ch rather than being fixed with hard breaks or
+     * non-breaking spaces.
+     */
+    text-wrap: balance;
   }
 
   h1 {
-    font-size: 2.5rem;
-    font-weight: 600;
-    line-height: 1.2;
-    margin: 0.5em 0 0.25em;
+    font-size: clamp(2.25rem, 1.4rem + 3.4vw, 3.75rem);
+    letter-spacing: -0.03em;
   }
 
   h2 {
-    font-size: 1.75rem;
-    font-weight: 600;
-    line-height: 1.2;
-    margin: 0.5em 0 0.25em;
+    font-size: clamp(1.75rem, 1.3rem + 1.8vw, 2.5rem);
+    letter-spacing: -0.02em;
   }
 
   h3 {
-    font-size: 1.375rem;
-    font-weight: 600;
-    line-height: 1.2;
-    margin: 0.5em 0 0.25em;
+    font-size: 1.25rem;
+    letter-spacing: -0.01em;
   }
 
   p {
     margin: 0.5em 0;
+    /* The same idea for body copy: avoid a one-word final line */
+    text-wrap: pretty;
   }
 
-  /* Headings step down on phones; the desktop sizes above are Lumo's */
-  @media (max-width: 640px) {
-    h1 {
-      font-size: 2rem;
-    }
+}
 
-    h2 {
-      font-size: 1.5rem;
-    }
-
-    h3 {
-      font-size: 1.2rem;
-    }
+/*
+ * Anyone who has asked their system to calm motion down gets a still page:
+ * the floating panels and entrance animations stop rather than shrink.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 
@@ -82,6 +101,11 @@
 
   .btn-secondary {
     @apply btn-base bg-surface-grey px-8 py-4 text-ink;
+  }
+
+  /* One visible focus ring for everything reachable by keyboard. */
+  .focus-ring {
+    @apply outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-brand-blue;
   }
 
   /*
