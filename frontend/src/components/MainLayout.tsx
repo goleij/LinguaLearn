@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, Outlet, useNavigate } from 'react-router-dom';
+import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import Icon from './Icon';
 
 const DESKTOP = '(min-width: 768px)';
 
@@ -58,43 +59,68 @@ export default function MainLayout() {
     if (!isDesktop) setDrawerOpen(false);
   };
 
-  const navLink =
-    'block rounded-[10px] px-4 py-[10px] font-medium text-ink no-underline transition hover:bg-surface-page';
+  // NavLink hands the active state in, so the drawer says where you are
+  const navLink = ({ isActive }: { isActive: boolean }) =>
+    `flex items-center gap-3 rounded-xl px-3 py-[10px] font-medium no-underline transition ${
+      isActive
+        ? 'bg-brand-green/10 text-brand-green-ink'
+        : 'text-ink hover:bg-surface-page'
+    }`;
 
   return (
     <div className="flex h-full flex-col bg-surface-page">
-      <header className="flex h-16 shrink-0 items-center gap-1 border-b border-surface-grey bg-white px-2 shadow-navbar sm:gap-2 sm:px-4">
+      {/*
+        The top bar carries the same identity as the landing and sign-in pages:
+        the dark surface and the identical logo lockup. The content below stays
+        light, so the brand frames the workspace instead of competing with it.
+      */}
+      <header className="flex h-16 shrink-0 items-center gap-1 bg-surface-dark px-2 sm:gap-2 sm:px-4">
         <button
           type="button"
           aria-label="Toggle menu"
           aria-expanded={drawerOpen}
           onClick={() => setDrawerOpen((open) => !open)}
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-ink transition hover:bg-surface-page"
+          className="focus-ring flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-lg text-white/80 transition-colors duration-200 hover:bg-white/10 hover:text-white"
         >
-          <span className="text-xl leading-none">☰</span>
+          <Icon name="menu" size={22} />
         </button>
 
-        <h1 className="m-0 min-w-0 flex-1 truncate text-base font-semibold text-brand-green sm:m-3 sm:text-lg">
-          German Learning
-        </h1>
+        <Link
+          to="/learn"
+          className="focus-ring flex min-w-0 flex-1 cursor-pointer items-center gap-2 truncate font-display text-base font-bold text-white no-underline sm:ml-2 sm:text-lg"
+        >
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-green text-white">
+            <Icon name="layers" size={18} />
+          </span>
+          <span className="truncate">German Learning</span>
+        </Link>
 
         {user && (
-          <div className="flex shrink-0 items-center gap-1 sm:gap-3">
-            <span className="rounded-[20px] bg-brand-yellow px-2 py-1 text-sm font-bold text-ink sm:px-4 sm:text-base">
-              <span className="hidden sm:inline">XP: </span>
+          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+            <span
+              aria-label={`Total XP: ${user.totalXp}`}
+              className="flex items-center gap-1.5 rounded-xl bg-white/10 px-2.5 py-1.5 text-sm font-bold text-white sm:px-3"
+            >
+              <Icon name="bolt" size={16} className="text-brand-yellow" />
               {user.totalXp}
             </span>
-            <span className="rounded-[20px] bg-brand-orange px-2 py-1 text-sm font-bold text-white sm:px-4 sm:text-base">
-              🔥 {user.currentStreak}
+            <span
+              aria-label={`Day streak: ${user.currentStreak}`}
+              className="flex items-center gap-1.5 rounded-xl bg-white/10 px-2.5 py-1.5 text-sm font-bold text-white sm:px-3"
+            >
+              <Icon name="flame" size={16} className="text-brand-orange" />
+              {user.currentStreak}
             </span>
             <button
               type="button"
               onClick={handleLogout}
               aria-label="Logout"
-              className="rounded-xl bg-surface-grey px-2 py-2 text-sm font-medium text-ink transition hover:brightness-95 sm:px-4 sm:text-base"
+              className="focus-ring flex h-9 items-center justify-center rounded-xl bg-white/10 px-2.5 text-sm font-medium text-white transition-colors duration-200 hover:bg-white/20 sm:px-4"
             >
               <span className="hidden sm:inline">Logout</span>
-              <span className="sm:hidden">⏻</span>
+              <span className="sm:hidden">
+                <Icon name="power" size={18} />
+              </span>
             </button>
           </div>
         )}
@@ -113,13 +139,20 @@ export default function MainLayout() {
 
         {drawerOpen && (
           <nav className="absolute inset-y-0 left-0 z-40 w-64 max-w-[80%] shrink-0 overflow-auto border-r border-surface-grey bg-white p-4 md:static md:z-auto md:max-w-none">
-            <h2 className="mb-2 text-ink">Menu</h2>
-            <Link to="/" className={navLink} onClick={closeOnMobile}>
-              Dashboard
-            </Link>
-            <Link to="/profile" className={navLink} onClick={closeOnMobile}>
-              Profile
-            </Link>
+            <p className="mb-2 px-3 text-xs font-bold uppercase tracking-wide text-ink-muted">
+              Menu
+            </p>
+            <div className="flex flex-col gap-1">
+              <NavLink to="/learn" className={navLink} onClick={closeOnMobile}>
+                <Icon name="home" /> Dashboard
+              </NavLink>
+              <NavLink to="/words" className={navLink} onClick={closeOnMobile}>
+                <Icon name="book" /> My words
+              </NavLink>
+              <NavLink to="/profile" className={navLink} onClick={closeOnMobile}>
+                <Icon name="user" /> Profile
+              </NavLink>
+            </div>
           </nav>
         )}
 

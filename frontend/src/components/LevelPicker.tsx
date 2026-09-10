@@ -15,7 +15,7 @@ export default function LevelPicker({
 }) {
   return (
     <section className="mb-5 w-full rounded-2xl bg-white p-4 shadow-unit sm:p-5">
-      <h3 className="mt-0 text-brand-green">Choose your level</h3>
+      <h3 className="mt-0 text-ink">Choose your level</h3>
       <p className="mt-0 text-ink-muted">
         Each level builds on the one before it — same situations, more German.
       </p>
@@ -40,13 +40,13 @@ export default function LevelPicker({
               }`}
             >
               <span
-                className={`text-xl font-bold ${active ? 'text-brand-green' : 'text-ink'}`}
+                className={`text-xl font-bold ${active ? 'text-brand-green-ink' : 'text-ink'}`}
               >
                 {level.level}
               </span>
               <span className="text-sm font-medium text-ink">{level.label}</span>
               <span className="mt-1 text-xs text-ink-muted">{level.description}</span>
-              <span className="mt-2 text-xs text-ink-faint">
+              <span className="mt-2 text-xs text-ink-muted">
                 {available
                   ? `${level.lessonCount} lesson${level.lessonCount === 1 ? '' : 's'}`
                   : 'Coming soon'}

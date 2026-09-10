@@ -1,10 +1,11 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import AuthLayout from '../components/AuthLayout';
 import { useAuth } from '../hooks/useAuth';
 import { useNotification } from '../hooks/useNotification';
 import { ApiError } from '../services/api';
 
-/** Sign in form on the gradient background. */
+/** Sign in form, in the shared signed-out shell. */
 export default function LoginPage() {
   const { user, loading, login } = useAuth();
   const navigate = useNavigate();
@@ -29,7 +30,7 @@ export default function LoginPage() {
   }, [registered, show, navigate]);
 
   if (!loading && user) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/learn" replace />;
   }
 
   const handleSubmit = async (event: FormEvent) => {
@@ -39,7 +40,7 @@ export default function LoginPage() {
 
     try {
       await login(username, password);
-      navigate('/', { replace: true });
+      navigate('/learn', { replace: true });
     } catch (e) {
       setError(
         e instanceof ApiError
@@ -52,54 +53,58 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-full items-center justify-center bg-auth-gradient p-5">
-      <div className="w-full max-w-[400px] rounded-[20px] bg-white p-6 shadow-card sm:p-10">
-        <div className="flex flex-col items-center">
-          <h1 className="mb-[10px] text-center text-brand-green">German Learning</h1>
-          <p className="mb-5 text-center text-ink-muted">Learn German the fun way!</p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="flex w-full flex-col gap-4">
-          {error && (
-            <div className="rounded-xl bg-feedback-wrong p-4 text-sm text-ink">
-              <strong className="block text-feedback-error">Incorrect username or password</strong>
-              {error}
-            </div>
-          )}
-
-          <label className="flex flex-col gap-1 text-sm font-medium text-ink-muted">
-            Username
-            <input
-              className="field-input"
-              value={username}
-              onChange={(event) => setUsername(event.target.value)}
-              autoComplete="username"
-              autoFocus
-            />
-          </label>
-
-          <label className="flex flex-col gap-1 text-sm font-medium text-ink-muted">
-            Password
-            <input
-              className="field-input"
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              autoComplete="current-password"
-            />
-          </label>
-
-          <button type="submit" className="btn-primary mt-2 w-full" disabled={submitting}>
-            {submitting ? 'Logging in…' : 'Log in'}
-          </button>
-        </form>
-
-        <div className="mt-5 text-center">
-          <Link to="/register" className="text-brand-blue hover:underline">
-            Don&apos;t have an account? Register here
+    <AuthLayout
+      title="Welcome back"
+      subtitle="Pick up where you left off."
+      footer={
+        <>
+          New here?{' '}
+          <Link to="/register" className="focus-ring font-semibold text-white hover:underline">
+            Create an account
           </Link>
-        </div>
-      </div>
-    </div>
+        </>
+      }
+    >
+      <form onSubmit={handleSubmit} className="flex w-full flex-col gap-4">
+        {error && (
+          <div role="alert" className="rounded-xl bg-feedback-wrong p-4 text-sm text-ink">
+            <strong className="block text-feedback-error-ink">
+              Incorrect username or password
+            </strong>
+            {error}
+          </div>
+        )}
+
+        <label className="flex flex-col gap-1.5 text-sm font-medium text-ink-muted">
+          Username
+          <input
+            className="field-input"
+            value={username}
+            onChange={(event) => setUsername(event.target.value)}
+            autoComplete="username"
+            autoFocus
+          />
+        </label>
+
+        <label className="flex flex-col gap-1.5 text-sm font-medium text-ink-muted">
+          Password
+          <input
+            className="field-input"
+            type="password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            autoComplete="current-password"
+          />
+        </label>
+
+        <button
+          type="submit"
+          className="btn-primary focus-ring mt-2 w-full cursor-pointer"
+          disabled={submitting}
+        >
+          {submitting ? 'Logging in…' : 'Log in'}
+        </button>
+      </form>
+    </AuthLayout>
   );
 }

@@ -1,10 +1,11 @@
 import { useState, type FormEvent } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
+import AuthLayout from '../components/AuthLayout';
 import { useAuth } from '../hooks/useAuth';
 import { useNotification } from '../hooks/useNotification';
 import { ApiError } from '../services/api';
 
-/** Account creation form with client side validation. */
+/** Account creation form, in the shared signed-out shell. */
 export default function RegisterPage() {
   const { user, loading, register } = useAuth();
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ export default function RegisterPage() {
   const [submitting, setSubmitting] = useState(false);
 
   if (!loading && user) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/learn" replace />;
   }
 
   const showError = (message: string) =>
@@ -59,72 +60,74 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex min-h-full items-center justify-center bg-auth-gradient p-5">
-      <div className="w-full max-w-[400px] rounded-[20px] bg-white p-6 shadow-card sm:p-10">
-        <div className="flex flex-col items-center">
-          <h1 className="mb-[10px] text-center text-brand-green">Create Account</h1>
-          <p className="mb-5 text-center text-ink-muted">Start your German learning journey!</p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="flex w-full flex-col gap-4" noValidate>
-          <label className="flex flex-col gap-1 text-sm font-medium text-ink-muted">
-            Username
-            <input
-              className="field-input"
-              placeholder="Choose a username"
-              value={username}
-              onChange={(event) => setUsername(event.target.value)}
-              autoComplete="username"
-            />
-          </label>
-
-          <label className="flex flex-col gap-1 text-sm font-medium text-ink-muted">
-            Email
-            <input
-              className="field-input"
-              type="email"
-              placeholder="your@email.com"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              autoComplete="email"
-            />
-          </label>
-
-          <label className="flex flex-col gap-1 text-sm font-medium text-ink-muted">
-            Password
-            <input
-              className="field-input"
-              type="password"
-              placeholder="At least 6 characters"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              autoComplete="new-password"
-            />
-          </label>
-
-          <label className="flex flex-col gap-1 text-sm font-medium text-ink-muted">
-            Confirm Password
-            <input
-              className="field-input"
-              type="password"
-              placeholder="Repeat your password"
-              value={confirmPassword}
-              onChange={(event) => setConfirmPassword(event.target.value)}
-              autoComplete="new-password"
-            />
-          </label>
-
-          <button type="submit" className="btn-primary w-full" disabled={submitting}>
-            {submitting ? 'Creating account…' : 'Create Account'}
-          </button>
-        </form>
-
-        <div className="mt-5 text-center">
-          <Link to="/login" className="text-brand-blue hover:underline">
-            Already have an account? Login here
+    <AuthLayout
+      title="Create your account"
+      subtitle="Free, and it stays free."
+      footer={
+        <>
+          Already have an account?{' '}
+          <Link to="/login" className="focus-ring font-semibold text-white hover:underline">
+            Log in
           </Link>
-        </div>
-      </div>
-    </div>
+        </>
+      }
+    >
+      <form onSubmit={handleSubmit} className="flex w-full flex-col gap-4" noValidate>
+        <label className="flex flex-col gap-1.5 text-sm font-medium text-ink-muted">
+          Username
+          <input
+            className="field-input"
+            placeholder="Choose a username"
+            value={username}
+            onChange={(event) => setUsername(event.target.value)}
+            autoComplete="username"
+          />
+        </label>
+
+        <label className="flex flex-col gap-1.5 text-sm font-medium text-ink-muted">
+          Email
+          <input
+            className="field-input"
+            type="email"
+            placeholder="your@email.com"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            autoComplete="email"
+          />
+        </label>
+
+        <label className="flex flex-col gap-1.5 text-sm font-medium text-ink-muted">
+          Password
+          <input
+            className="field-input"
+            type="password"
+            placeholder="At least 6 characters"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            autoComplete="new-password"
+          />
+        </label>
+
+        <label className="flex flex-col gap-1.5 text-sm font-medium text-ink-muted">
+          Confirm Password
+          <input
+            className="field-input"
+            type="password"
+            placeholder="Repeat your password"
+            value={confirmPassword}
+            onChange={(event) => setConfirmPassword(event.target.value)}
+            autoComplete="new-password"
+          />
+        </label>
+
+        <button
+          type="submit"
+          className="btn-primary focus-ring mt-2 w-full cursor-pointer"
+          disabled={submitting}
+        >
+          {submitting ? 'Creating account…' : 'Create Account'}
+        </button>
+      </form>
+    </AuthLayout>
   );
 }

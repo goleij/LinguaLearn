@@ -48,9 +48,10 @@ describe('MainLayout', () => {
   it('shows the XP and streak of the signed in user', () => {
     renderLayout(anna);
 
-    const header = screen.getByRole('banner');
-    expect(header).toHaveTextContent('XP: 120');
-    expect(header).toHaveTextContent('4');
+    // The badges are an icon and a bare number, so their accessible label is
+    // the only thing that says which number is which
+    expect(screen.getByLabelText('Total XP: 120')).toHaveTextContent('120');
+    expect(screen.getByLabelText('Day streak: 4')).toHaveTextContent('4');
   });
 
   it('re-renders both badges when the context changes mid lesson', () => {
@@ -61,16 +62,16 @@ describe('MainLayout', () => {
     useAuth.mockReturnValue({ user: { ...anna, totalXp: 135, currentStreak: 5 }, logout });
     rerender(layout());
 
-    const header = screen.getByRole('banner');
-    expect(header).toHaveTextContent('XP: 135');
-    expect(header).not.toHaveTextContent('XP: 120');
-    expect(header.textContent).toContain('5');
+    expect(screen.getByLabelText('Total XP: 135')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Total XP: 120')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Day streak: 5')).toBeInTheDocument();
   });
 
   it('hides the badges and the logout button when nobody is signed in', () => {
     renderLayout(null);
 
-    expect(screen.getByRole('banner')).not.toHaveTextContent('XP:');
+    expect(screen.queryByLabelText(/^Total XP/)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/^Day streak/)).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Logout' })).not.toBeInTheDocument();
   });
 

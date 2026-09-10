@@ -4,6 +4,7 @@ import LevelPicker from '../components/LevelPicker';
 import { useAuth } from '../hooks/useAuth';
 import { learningService } from '../services/learningService';
 import type { CefrLevel, CefrLevelInfo, CourseContent, LessonStatus } from '../types';
+import Icon, { type IconName } from '../components/Icon';
 
 const LEVEL_STORAGE_KEY = 'lingualearn.level';
 
@@ -68,7 +69,7 @@ export default function DashboardPage() {
 
           {content.units.map((unit) => (
             <section key={unit.id} className="mb-5 w-full rounded-2xl bg-white p-4 shadow-unit sm:p-5">
-              <h3 className="text-brand-green">{unit.name}</h3>
+              <h3 className="text-ink">{unit.name}</h3>
               {unit.description && <p className="text-ink-muted">{unit.description}</p>}
 
               <div className="mt-4 flex flex-wrap items-center gap-2">
@@ -98,9 +99,9 @@ function LessonTile({ lesson, onOpen }: { lesson: LessonStatus; onOpen: () => vo
     ? 'bg-brand-green text-white'
     : lesson.unlocked
       ? 'bg-brand-blue text-white'
-      : 'bg-surface-grey text-ink-faint';
+      : 'bg-surface-grey text-ink';
 
-  const icon = lesson.completed ? '✓' : lesson.unlocked ? '▶' : '🔒';
+  const icon: IconName = lesson.completed ? 'check' : lesson.unlocked ? 'play' : 'lock';
 
   return (
     <div
@@ -117,7 +118,7 @@ function LessonTile({ lesson, onOpen }: { lesson: LessonStatus; onOpen: () => vo
         lesson.unlocked ? 'cursor-pointer hover:scale-105' : 'cursor-not-allowed'
       }`}
     >
-      <span className="text-2xl">{icon}</span>
+      <Icon name={icon} size={28} />
       <span className="mt-2 px-2 text-center text-xs font-bold">{lesson.name}</span>
     </div>
   );

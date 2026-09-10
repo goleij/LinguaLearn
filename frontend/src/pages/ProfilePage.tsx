@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { learningService } from '../services/learningService';
 import type { RecentActivity, Profile } from '../types';
+import Icon from '../components/Icon';
 
 /** Avatar, stat cards and the recent activity list. */
 export default function ProfilePage() {
@@ -31,7 +32,7 @@ export default function ProfilePage() {
 
   return (
     <div className="flex h-full flex-col items-center p-3 sm:p-5">
-      <div className="flex w-full max-w-[600px] flex-col items-center rounded-[20px] bg-white p-4 shadow-card sm:p-5">
+      <div className="flex w-full max-w-[600px] flex-col items-center rounded-card bg-white p-4 shadow-card sm:p-5">
         <div className="flex h-[100px] w-[100px] items-center justify-center rounded-full bg-brand-green">
           <span className="text-[40px] font-bold text-white">
             {user.username.charAt(0).toUpperCase()}
@@ -93,7 +94,9 @@ function RecentActivityRow({ activity }: { activity: RecentActivity }) {
 
   return (
     <div className="mb-[10px] flex w-full items-center rounded-[10px] bg-surface-page p-4">
-      <span className="mr-[10px] text-xl text-brand-green">✓</span>
+      <span className="mr-[10px] text-brand-green">
+        <Icon name="check" size={20} />
+      </span>
 
       <div className="flex flex-1 flex-col">
         <span className="font-bold text-ink">{activity.lessonName}</span>
