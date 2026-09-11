@@ -44,6 +44,7 @@ public class ProgressService {
     private final ActivityService activityService;
     private final ScoreService scoreService;
     private final UserService userService;
+    private final VocabularyService vocabularyService;
 
     public ProgressService(ProgressRepository progressRepository,
             UserRepository userRepository,
@@ -51,7 +52,8 @@ public class ProgressService {
             ActivityAttemptRepository attemptRepository,
             ActivityService activityService,
             ScoreService scoreService,
-            UserService userService) {
+            UserService userService,
+            VocabularyService vocabularyService) {
         this.progressRepository = progressRepository;
         this.userRepository = userRepository;
         this.lessonRepository = lessonRepository;
@@ -59,6 +61,7 @@ public class ProgressService {
         this.activityService = activityService;
         this.scoreService = scoreService;
         this.userService = userService;
+        this.vocabularyService = vocabularyService;
     }
 
     public Progress getOrCreateProgress(Long userId, Long lessonId) {
@@ -127,6 +130,9 @@ public class ProgressService {
             progress.incrementStreak();
         } else {
             progress.resetStreak();
+            // A word the learner just got wrong is exactly the one worth
+            // reviewing later, so it files itself in their word bank
+            vocabularyService.captureMistake(userId, activity, answer);
         }
 
         // Only the checkpoint decides completion
