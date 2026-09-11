@@ -238,3 +238,34 @@ export interface GrammarFeedback {
   issues: GrammarIssue[];
   message: string;
 }
+
+// --- the word bank -----------------------------------------------------------
+
+export type WordSource = 'WORD_EXPLORER' | 'VOCABULARY' | 'MISTAKE' | 'MANUAL';
+
+export interface SavedWord {
+  id: number;
+  german: string;
+  english: string;
+  source: WordSource;
+  sourceLabel: string;
+  topic: string | null;
+  cefrLevel: CefrLevel | null;
+  lessonName: string | null;
+  /** Leitner box: 0 is brand new, maxBox is learned. */
+  box: number;
+  maxBox: number;
+  due: boolean;
+  learned: boolean;
+  reviewCount: number;
+  correctCount: number;
+  dueAt: string | null;
+  addedAt: string;
+}
+
+export interface WordBank {
+  total: number;
+  due: number;
+  learned: number;
+  words: SavedWord[];
+}
