@@ -1,4 +1,4 @@
-import { useWordExplorer } from '../hooks/useWordExplorer';
+import { useWordExplorer, type WordContext } from '../hooks/useWordExplorer';
 
 /**
  * German text where every word can be clicked to open the Word Explorer.
@@ -9,9 +9,12 @@ import { useWordExplorer } from '../hooks/useWordExplorer';
 export default function ClickableText({
   text,
   className = '',
+  context,
 }: {
   text: string;
   className?: string;
+  /** What the page already knows, e.g. the English a word list teaches. */
+  context?: WordContext;
 }) {
   const { explore } = useWordExplorer();
 
@@ -36,7 +39,7 @@ export default function ClickableText({
             {before}
             <button
               type="button"
-              onClick={() => explore(word)}
+              onClick={() => explore(word, context)}
               title={`Look up "${word}"`}
               className="cursor-pointer border-0 bg-transparent p-0 font-inherit text-inherit underline decoration-dotted decoration-1 underline-offset-2 transition hover:text-brand-blue"
             >
