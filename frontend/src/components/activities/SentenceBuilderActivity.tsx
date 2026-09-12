@@ -51,7 +51,7 @@ export default function SentenceBuilderActivity({
               key={index}
               type="button"
               onClick={() => returnWord(index)}
-              className="rounded-[20px] bg-brand-green px-5 py-[10px] font-medium text-white transition-all duration-200"
+              className="rounded-card bg-brand-green px-5 py-[10px] font-medium text-white transition-all duration-200"
             >
               {words[index]}
             </button>
@@ -65,7 +65,7 @@ export default function SentenceBuilderActivity({
             key={index}
             type="button"
             onClick={() => takeWord(index)}
-            className="rounded-[20px] bg-brand-blue px-5 py-[10px] font-medium text-white transition-all duration-200"
+            className="rounded-card bg-brand-blue px-5 py-[10px] font-medium text-white transition-all duration-200"
           >
             {words[index]}
           </button>

@@ -22,7 +22,7 @@ export default function DialogueActivity({
   return (
     <div className="flex w-full flex-col items-center gap-3 p-4">
       {!asksForReply && (
-        <span className="rounded-[20px] bg-brand-green px-4 py-1 text-xs font-bold uppercase tracking-wide text-white">
+        <span className="rounded-card bg-brand-green px-4 py-1 text-xs font-bold uppercase tracking-wide text-white">
           In context
         </span>
       )}
@@ -32,10 +32,10 @@ export default function DialogueActivity({
       </h3>
 
       {!asksForReply && activity.context && (
-        <p className="max-w-[460px] text-center text-ink-muted">{activity.context}</p>
+        <p className="max-w-prose text-center text-ink-muted">{activity.context}</p>
       )}
 
-      <div className="flex w-full max-w-[460px] flex-col gap-2">
+      <div className="flex w-full max-w-prose flex-col gap-2">
         {(activity.lines ?? []).map((line, index) => (
           <div key={`${line.speaker}-${index}`} className="rounded-2xl bg-surface-page px-4 py-3">
             <span className="block text-xs font-bold uppercase tracking-wide text-brand-blue">

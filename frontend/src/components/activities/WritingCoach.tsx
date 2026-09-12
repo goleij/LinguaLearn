@@ -31,7 +31,7 @@ export default function WritingCoach({ text }: { text: string }) {
   };
 
   return (
-    <div className="w-full max-w-[460px]">
+    <div className="w-full max-w-prose">
       <button
         type="button"
         className="btn-secondary w-full"
@@ -43,7 +43,7 @@ export default function WritingCoach({ text }: { text: string }) {
 
       {feedback && (
         <div className="mt-3 rounded-xl bg-surface-page p-4">
-          <p className={`m-0 font-bold ${feedback.issueCount === 0 ? 'text-brand-green' : 'text-ink'}`}>
+          <p className={`m-0 font-bold ${feedback.issueCount === 0 ? 'text-brand-green-ink' : 'text-ink'}`}>
             {feedback.message}
           </p>
 
@@ -51,7 +51,7 @@ export default function WritingCoach({ text }: { text: string }) {
             {feedback.issues.map((issue, index) => (
               <div key={`${issue.offset}-${index}`} className="rounded-xl bg-white p-3">
                 {issue.excerpt && (
-                  <p className="m-0 font-bold text-feedback-error">„{issue.excerpt}“</p>
+                  <p className="m-0 font-bold text-feedback-error-ink">„{issue.excerpt}“</p>
                 )}
                 <p className="m-0 text-sm text-ink">{issue.message}</p>
 

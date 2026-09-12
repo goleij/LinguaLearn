@@ -24,7 +24,7 @@ export default function ShortWritingActivity({
 
   return (
     <div className="flex w-full flex-col items-center gap-2 p-4">
-      <span className="rounded-[20px] bg-brand-orange px-4 py-1 text-xs font-bold uppercase tracking-wide text-white">
+      <span className="rounded-card bg-brand-orange px-4 py-1 text-xs font-bold uppercase tracking-wide text-white">
         Apply
       </span>
 
@@ -33,7 +33,7 @@ export default function ShortWritingActivity({
       <p className="text-center text-xl font-bold text-brand-blue">{activity.prompt}</p>
 
       {activity.context && (
-        <p className="max-w-[460px] text-center text-ink-muted">{activity.context}</p>
+        <p className="max-w-prose text-center text-ink-muted">{activity.context}</p>
       )}
 
       {activity.mustUseWords && activity.mustUseWords.length > 0 && (
@@ -42,7 +42,7 @@ export default function ShortWritingActivity({
           {activity.mustUseWords.map((word) => (
             <span
               key={word}
-              className="rounded-[20px] bg-surface-grey px-3 py-1 text-sm font-medium text-ink"
+              className="rounded-card bg-surface-grey px-3 py-1 text-sm font-medium text-ink"
             >
               {word}
             </span>
@@ -51,7 +51,7 @@ export default function ShortWritingActivity({
       )}
 
       <textarea
-        className="field-input min-h-[130px] w-full max-w-[460px] resize-y text-lg"
+        className="field-input min-h-[130px] w-full max-w-prose resize-y text-lg"
         placeholder="Write in German…"
         value={text}
         onChange={(event) => setText(event.target.value)}

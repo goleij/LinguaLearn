@@ -14,18 +14,18 @@ export default function LearnCard({
 }) {
   return (
     <div className="flex w-full flex-col items-center gap-3 p-4">
-      <span className="rounded-[20px] bg-brand-blue px-4 py-1 text-xs font-bold uppercase tracking-wide text-white">
+      <span className="rounded-card bg-brand-blue px-4 py-1 text-xs font-bold uppercase tracking-wide text-white">
         Learn
       </span>
 
       <h3 className="text-center text-brand-blue">{activity.prompt}</h3>
 
       {activity.context && (
-        <p className="max-w-[460px] text-center text-ink-muted">{activity.context}</p>
+        <p className="max-w-prose text-center text-ink-muted">{activity.context}</p>
       )}
 
       {activity.examples && activity.examples.length > 0 && (
-        <div className="flex w-full max-w-[460px] flex-col gap-2">
+        <div className="flex w-full max-w-prose flex-col gap-2">
           {activity.examples.map((example) => (
             <div
               key={example.de}
@@ -39,7 +39,7 @@ export default function LearnCard({
       )}
 
       {activity.bullets && activity.bullets.length > 0 && (
-        <ul className="w-full max-w-[460px] list-none space-y-2">
+        <ul className="w-full max-w-prose list-none space-y-2">
           {activity.bullets.map((bullet) => (
             <li key={bullet} className="flex gap-2 text-ink">
               <span className="text-brand-green">•</span>

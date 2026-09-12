@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import ChoiceOptions from './ChoiceOptions';
 import type { Activity } from '../../types';
+import Icon from '../Icon';
 
 /**
  * Plays the German line with the browser's own speech synthesis, then asks
@@ -41,7 +42,7 @@ export default function ListeningActivity({
         className="my-2 flex h-[88px] w-[88px] items-center justify-center rounded-full bg-brand-blue text-[36px] text-white transition hover:brightness-95"
         aria-label="Play the audio"
       >
-        🔊
+        <Icon name="volume" size={26} />
       </button>
 
       {!supported && (

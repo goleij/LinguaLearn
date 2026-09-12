@@ -6,6 +6,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useNotification } from '../hooks/useNotification';
 import { learningService } from '../services/learningService';
 import type { Activity, AnswerResult, LessonCompletion, LessonDetail } from '../types';
+import Icon from '../components/Icon';
 
 /**
  * Runs a lesson as Learn → Context → Guided practice → Practice → Apply →
@@ -40,7 +41,7 @@ export default function LessonPage() {
 
         if (!detail.unlocked) {
           show('This lesson is locked!', { position: 'middle' });
-          navigate('/', { replace: true });
+          navigate('/learn', { replace: true });
           return;
         }
 
@@ -55,7 +56,7 @@ export default function LessonPage() {
       .catch(() => {
         if (!active) return;
         show('Lesson not found', { position: 'middle' });
-        navigate('/', { replace: true });
+        navigate('/learn', { replace: true });
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -137,9 +138,9 @@ export default function LessonPage() {
   if (lesson.activities.length === 0) {
     return (
       <div className="flex h-full flex-col items-center p-3 sm:p-5">
-        <div className="flex flex-col items-center rounded-[20px] bg-white p-5">
+        <div className="flex flex-col items-center rounded-card bg-white p-5">
           <h2 className="text-ink">No activities available for this lesson</h2>
-          <button type="button" className="btn-secondary mt-4" onClick={() => navigate('/')}>
+          <button type="button" className="btn-secondary mt-4" onClick={() => navigate('/learn')}>
             Back to Dashboard
           </button>
         </div>
@@ -150,40 +151,32 @@ export default function LessonPage() {
   const total = lesson.activities.length;
   const current = lesson.activities[Math.min(index, total - 1)];
   const stage = completion ? 'RESULT' : current.phase;
-  const progress = Math.min(index / total, 1);
 
   return (
     <div className="flex h-full flex-col items-center p-3 sm:p-5">
-      <div className="flex w-full max-w-[600px] flex-col gap-4 rounded-[20px] bg-white p-4 shadow-card sm:p-5">
+      <div className="flex w-full max-w-[600px] flex-col gap-4 rounded-card bg-white p-4 shadow-card sm:p-5">
         <div className="flex w-full items-center gap-3">
           <button
             type="button"
-            onClick={() => navigate('/')}
-            className="shrink-0 rounded-[10px] bg-surface-grey px-3 py-2 text-ink transition hover:brightness-95 sm:px-4"
+            onClick={() => navigate('/learn')}
+            aria-label="Back to the dashboard"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] bg-surface-grey text-ink transition hover:brightness-95"
           >
-            ← Back
+            <Icon name="arrowLeft" size={18} />
           </button>
-          <h2 className="m-0 min-w-0 flex-1 text-lg text-brand-green sm:text-2xl">{lesson.name}</h2>
+          <h2 className="m-0 min-w-0 flex-1 text-lg text-brand-green-ink sm:text-2xl">{lesson.name}</h2>
           {lesson.cefrLevel && (
-            <span className="rounded-[20px] bg-brand-blue px-3 py-1 text-xs font-bold text-white">
+            <span className="rounded-card bg-brand-blue px-3 py-1 text-xs font-bold text-white">
               {lesson.cefrLevel}
             </span>
           )}
         </div>
 
-        <PhaseIndicator current={stage} presentPhases={presentPhases} />
-
-        <div className="flex w-full items-center gap-3">
-          <div className="h-3 flex-1 overflow-hidden rounded-md bg-surface-grey">
-            <div
-              className="h-full rounded-md bg-brand-green transition-[width] duration-300"
-              style={{ width: `${progress * 100}%` }}
-            />
-          </div>
-          <span className="min-w-[60px] text-ink-muted">
-            {Math.min(index, total)} / {total}
-          </span>
-        </div>
+        <PhaseIndicator
+          current={stage}
+          presentPhases={presentPhases}
+          progressLabel={`${Math.min(index, total)} / ${total}`}
+        />
 
         <div className="w-full">
           {completion ? (
@@ -191,7 +184,7 @@ export default function LessonPage() {
               completion={completion}
               lesson={lesson}
               onRetry={restart}
-              onHome={() => navigate('/')}
+              onHome={() => navigate('/learn')}
             />
           ) : feedback ? (
             <FeedbackCard result={feedback} onContinue={goToNext} />
@@ -227,8 +220,9 @@ function GuidedHint({ activity }: { activity: Activity }) {
   return (
     <div className="mb-2 flex flex-col items-center">
       {open ? (
-        <p className="m-0 rounded-xl bg-brand-yellow/20 px-4 py-2 text-center text-ink">
-          💡 {activity.hint}
+        <p className="m-0 flex items-center gap-2 rounded-xl bg-brand-yellow/20 px-4 py-2 text-center text-ink">
+          <Icon name="bulb" size={18} className="text-brand-orange" />
+          {activity.hint}
         </p>
       ) : (
         <button
@@ -254,12 +248,14 @@ function FeedbackCard({ result, onContinue }: { result: AnswerResult; onContinue
       }`}
     >
       <span
-        className={`text-[48px] leading-none ${correct ? 'text-brand-green' : 'text-feedback-error'}`}
+        className={`flex h-14 w-14 items-center justify-center rounded-full bg-white/70 ${
+          correct ? 'text-brand-green' : 'text-feedback-error-ink'
+        }`}
       >
-        {correct ? '✓' : '✗'}
+        <Icon name={correct ? 'check' : 'cross'} size={30} />
       </span>
 
-      <h3 className={`m-0 ${correct ? 'text-brand-green' : 'text-feedback-error'}`}>
+      <h3 className={`m-0 ${correct ? 'text-brand-green' : 'text-feedback-error-ink'}`}>
         {correct ? 'Correct!' : 'Not quite right'}
       </h3>
 
@@ -275,7 +271,10 @@ function FeedbackCard({ result, onContinue }: { result: AnswerResult; onContinue
       )}
 
       {!correct && result.hint && (
-        <p className="m-0 text-center text-sm text-ink-muted">💡 {result.hint}</p>
+        <p className="m-0 flex items-center justify-center gap-2 text-center text-sm text-ink-muted">
+          <Icon name="bulb" size={16} className="text-brand-orange" />
+          {result.hint}
+        </p>
       )}
 
       {!correct && forgiving && (
@@ -286,12 +285,12 @@ function FeedbackCard({ result, onContinue }: { result: AnswerResult; onContinue
 
       <div className="flex flex-wrap items-center justify-center gap-2">
         {result.skill && (
-          <span className="rounded-[20px] bg-white/70 px-3 py-1 text-xs font-medium text-ink-muted">
+          <span className="rounded-card bg-white/70 px-3 py-1 text-xs font-medium text-ink-muted">
             {result.skill.replace(/_/g, ' ').toLowerCase()}
           </span>
         )}
         {result.xpAwarded > 0 && (
-          <span className="rounded-[20px] bg-brand-yellow px-[15px] py-[5px] font-bold text-ink">
+          <span className="rounded-card bg-brand-yellow px-[15px] py-[5px] font-bold text-ink">
             +{result.xpAwarded} XP
           </span>
         )}
@@ -335,7 +334,9 @@ function ResultCard({
 
   return (
     <div className="flex w-full flex-col items-center gap-2 rounded-2xl bg-feedback-correct p-5">
-      <span className="text-[64px] leading-none">🏆</span>
+      <span className="flex h-20 w-20 items-center justify-center rounded-full bg-white/70 text-brand-green">
+        <Icon name="trophy" size={40} />
+      </span>
 
       <h2 className="m-0 text-brand-green">Lesson Complete!</h2>
 
@@ -363,11 +364,11 @@ function ResultCard({
       )}
 
       {completion.practiceMode ? (
-        <span className="rounded-[25px] bg-ink-muted px-[25px] py-[10px] text-base font-bold text-white">
-          🔄 Practice Mode - No XP Earned
+        <span className="flex items-center gap-2 rounded-pill bg-ink-muted px-[25px] py-[10px] text-base font-bold text-white">
+          <Icon name="refresh" size={18} /> Practice Mode &mdash; no XP earned
         </span>
       ) : (
-        <span className="rounded-[25px] bg-brand-yellow px-[25px] py-[10px] text-xl font-bold text-ink">
+        <span className="rounded-pill bg-brand-yellow px-[25px] py-[10px] text-xl font-bold text-ink">
           +{completion.lessonXpEarned} XP earned!
         </span>
       )}
@@ -378,7 +379,7 @@ function ResultCard({
           {skills.map((skill) => (
             <span
               key={skill}
-              className="rounded-[20px] bg-white/70 px-3 py-1 text-xs font-medium text-ink"
+              className="rounded-card bg-white/70 px-3 py-1 text-xs font-medium text-ink"
             >
               {skill.replace(/_/g, ' ').toLowerCase()}
             </span>
@@ -386,7 +387,7 @@ function ResultCard({
         </div>
       )}
 
-      <p className={`font-bold ${completion.passed ? 'text-brand-green' : 'text-brand-orange'}`}>
+      <p className={`font-bold ${completion.passed ? 'text-brand-green-ink' : 'text-brand-orange-ink'}`}>
         {completion.passed
           ? "Great job! You've unlocked the next lesson!"
           : `You need ${Math.round(completion.passThreshold)}% in the checkpoint to pass. Try again!`}

@@ -16,7 +16,7 @@ export default function ContextChoiceActivity({
       <h3 className="text-ink">{activity.instruction ?? 'Choose what fits the situation'}</h3>
 
       {activity.context && (
-        <p className="w-full max-w-[460px] rounded-xl bg-surface-page px-4 py-3 text-center italic text-ink-muted">
+        <p className="w-full max-w-prose rounded-xl bg-surface-page px-4 py-3 text-center italic text-ink-muted">
           {activity.context}
         </p>
       )}
