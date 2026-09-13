@@ -126,7 +126,7 @@ test.describe.serial('Lesson and XP', () => {
     expect(xpAfter).toBeGreaterThan(xpBefore);
 
     await page.getByRole('button', { name: 'Back to Dashboard' }).click();
-    await expect(page.getByRole('banner')).toContainText(`XP: ${xpAfter}`);
+    expect(await navbarXp(page)).toBe(xpAfter);
   });
 
   test('the XP survives a reload and the lesson counts as done', async ({ page }) => {
@@ -153,7 +153,7 @@ test.describe.serial('Lesson and XP', () => {
     await openGreetings(page);
     await playWholeLesson(page);
 
-    await expect(page.getByText('Practice Mode - No XP Earned')).toBeVisible();
+    await expect(page.getByText(/Practice Mode .* no XP earned/)).toBeVisible();
     expect(await navbarXp(page)).toBe(xpBefore);
   });
 });

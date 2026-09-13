@@ -36,8 +36,9 @@ test.describe('Authentication', () => {
 
     await loginAndLandOnDashboard(page, user);
 
-    await expect(page).toHaveURL(/\/$/);
-    await expect(page.getByRole('banner')).toContainText('XP:');
+    await expect(page).toHaveURL(/\/learn$/);
+    // The badges are icon plus number now, so the label is what identifies them
+    await expect(page.locator('header [aria-label^="Total XP"]')).toBeVisible();
   });
 
   test('the wrong password is refused', async ({ page }) => {
@@ -59,7 +60,7 @@ test.describe('Authentication', () => {
     await expect(page).toHaveURL(/\/login$/);
 
     // The session is really gone, not just the page
-    await page.goto('/');
+    await page.goto('/learn');
     await expect(page).toHaveURL(/\/login$/);
   });
 });

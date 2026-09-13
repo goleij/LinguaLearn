@@ -44,7 +44,15 @@ export async function register(page: Page, user: TestUser, email = user.email): 
   // "Password" on its own would also match "Confirm Password"
   await page.getByLabel('Password', { exact: true }).fill(user.password);
   await page.getByLabel('Confirm Password').fill(user.password);
-  await submitAndWaitFor(page, '/api/auth/register', 'Create Account');
+  await page.getByRole('button', { name: 'Create Account' }).click();
+
+  // Wait for the request to land before returning. Without this a caller that
+  // logs in next can race the POST and be told its own account does not exist.
+  // Either outcome ends the wait: the redirect on success, or the toast that
+  // explains the refusal, which some specs are specifically looking for.
+  await expect(
+    page.getByRole('alert').or(page.getByRole('button', { name: 'Log in' })).first(),
+  ).toBeVisible();
 }
 
 export async function login(page: Page, user: TestUser, password = user.password): Promise<void> {
@@ -52,20 +60,7 @@ export async function login(page: Page, user: TestUser, password = user.password
   await waitForAppReady(page);
   await page.getByLabel('Username').fill(user.username);
   await page.getByLabel('Password').fill(password);
-  await submitAndWaitFor(page, '/api/auth/login', 'Log in');
-}
-
-/**
- * Presses a submit button and waits for the request behind it to come back.
- *
- * Without this the helper returns while the POST is still in flight, and the
- * next navigation cancels it -- which looked exactly like a rejected account,
- * because the following login then found no such user.
- */
-async function submitAndWaitFor(page: Page, apiPath: string, button: string): Promise<void> {
-  const response = page.waitForResponse((it) => it.url().includes(apiPath));
-  await page.getByRole('button', { name: button }).click();
-  await response;
+  await page.getByRole('button', { name: 'Log in' }).click();
 }
 
 export async function loginAndLandOnDashboard(page: Page, user: TestUser): Promise<void> {
@@ -73,21 +68,30 @@ export async function loginAndLandOnDashboard(page: Page, user: TestUser): Promi
   await expect(page.getByRole('heading', { name: `Welcome back, ${user.username}!` })).toBeVisible();
 }
 
-/** Reads the XP badge in the navbar, which is where the learner sees it. */
+/**
+ * Reads the XP badge in the navbar, which is where the learner sees it.
+ *
+ * Both badges are an icon and a bare number, so their accessible label is the
+ * only thing that says which number this is — and the only stable handle a
+ * test has now that the emoji are gone.
+ */
 export async function navbarXp(page: Page): Promise<number> {
-  return readBadge(page, /XP:\s*(\d+)/, 'XP');
+  return readBadge(page, 'Total XP', 'XP');
 }
 
 /** Reads the flame badge, which counts days in a row, not correct answers. */
 export async function navbarStreak(page: Page): Promise<number> {
-  return readBadge(page, /\u{1F525}\s*(\d+)/u, 'streak');
+  return readBadge(page, 'Day streak', 'streak');
 }
 
-async function readBadge(page: Page, pattern: RegExp, name: string): Promise<number> {
-  const header = await page.getByRole('banner').innerText();
-  const match = header.match(pattern);
+async function readBadge(page: Page, labelPrefix: string, name: string): Promise<number> {
+  const label = await page
+    .locator(`header [aria-label^="${labelPrefix}"]`)
+    .getAttribute('aria-label');
+
+  const match = label?.match(/(\d+)/);
   if (!match) {
-    throw new Error(`No ${name} badge in the navbar. It reads: ${header}`);
+    throw new Error(`No ${name} badge in the navbar. Its label read: ${label}`);
   }
   return Number(match[1]);
 }

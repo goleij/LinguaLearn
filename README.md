@@ -3,7 +3,7 @@
 [![CI](https://github.com/goleij/LinguaLearn/actions/workflows/ci.yml/badge.svg)](https://github.com/goleij/LinguaLearn/actions/workflows/ci.yml)
 [![Backend](https://img.shields.io/badge/backend-Spring%20Boot%203.2-6DB33F?logo=springboot&logoColor=white)](pom.xml)
 [![Frontend](https://img.shields.io/badge/frontend-React%2018%20%2B%20TypeScript-61DAFB?logo=react&logoColor=black)](frontend/package.json)
-[![Tests](https://img.shields.io/badge/tests-92%20JUnit%20%7C%2019%20Vitest%20%7C%2012%20Playwright-blue)](#testing)
+[![Tests](https://img.shields.io/badge/tests-105%20JUnit%20%7C%2019%20Vitest%20%7C%2017%20Playwright-blue)](#testing)
 
 A German learning platform built around CEFR levels and a lesson engine that teaches
 before it tests. A lesson is a sequence of **activities** that walks the learner from new
@@ -21,6 +21,7 @@ the backend actually stored.
 - [Project layout](#project-layout)
 - [The lesson activity engine](#the-lesson-activity-engine)
 - [XP, progress and unlocking](#xp-progress-and-unlocking)
+- [The word bank](#the-word-bank)
 - [External services](#external-services)
 - [API reference](#api-reference)
 - [Testing](#testing)
@@ -38,8 +39,11 @@ the backend actually stored.
   position, how many pairs were right, which required word was missing.
 - **Honest XP.** XP is paid once per activity. Replaying a finished lesson is practice,
   not a way to farm points.
-- **Word Explorer.** Any German word in the interface can be clicked to look it up in the
-  German Wiktionary.
+- **A word bank that fills itself.** Miss a word in a lesson and it is saved with its
+  meaning, then comes back as a flashcard on a spacing schedule until it sticks.
+- **Word Explorer.** Any German word in the interface can be clicked to look it up. Where
+  the lesson knows the English, that is shown first and the German Wiktionary entry
+  follows as background.
 - **Writing Coach.** Free writing tasks can be checked for grammar before submission.
 
 ---
@@ -144,7 +148,7 @@ frontend/
     ├── components/
     │   └── activities/  One component per activity type, plus ActivityRenderer
     ├── hooks/           useAuth, useNotification, useWordExplorer
-    ├── pages/           Login, Register, Dashboard, Lesson, Profile
+    ├── pages/           Landing, Login, Register, Dashboard, Lesson, Words, Profile
     ├── services/        The fetch wrapper and the typed API clients
     ├── test/            Vitest setup
     └── types/           Mirrors of the backend DTOs
@@ -204,6 +208,28 @@ units and lessons, so a content update never duplicates a course or discards acc
 
 ---
 
+## The word bank
+
+Every learner has a word bank, and it fills itself.
+
+**Deliberately** — the ★ beside any word in a lesson's vocabulary list, or the save button
+in the Word Explorer.
+
+**Automatically** — when an answer is wrong, the word behind it is filed for review. The
+pair is never parsed out of a prompt: it is looked up in what the lesson itself declared.
+A lesson's vocabulary lists and matching activities already hold German and English side
+by side, so matching the activity's correct answer against either side yields a pair that
+is right by construction. An activity about something the lesson never taught files
+nothing rather than guessing, and a matching activity files only the pairs that were
+actually missed.
+
+Review is a Leitner box system. A word starts in box 0 and moves up one box each time it
+is remembered, waiting 0, 1, 3, 7, 16 then 35 days before returning; forgetting it drops
+it back to box 0. The whole schedule is two columns — `box` and `dueAt` — so a word is due
+simply when its date has passed and no background job is needed.
+
+---
+
 ## External services
 
 All three are optional, free, and called only from the backend. Each is wrapped in a
@@ -254,6 +280,16 @@ Everything under `/api` needs a session except the four auth endpoints.
 | `POST` | `/api/lessons/{id}/activities/{activityId}/answer` | Submit an answer, returns the graded result  |
 | `POST` | `/api/lessons/{id}/complete`                       | Finish the attempt, returns the summary      |
 | `GET`  | `/api/profile`                                     | Stats and recent activity                    |
+
+### Word bank
+
+| Method   | Path                           | Purpose                                        |
+| -------- | ------------------------------ | ---------------------------------------------- |
+| `GET`    | `/api/vocabulary`              | Every saved word, with the totals              |
+| `GET`    | `/api/vocabulary/due`          | Only the cards whose review date has come      |
+| `POST`   | `/api/vocabulary`              | Save a word                                    |
+| `POST`   | `/api/vocabulary/{id}/review`  | One flashcard answer; moves it along the schedule |
+| `DELETE` | `/api/vocabulary/{id}`         | Remove a word                                  |
 
 ### Tools
 
@@ -336,7 +372,15 @@ cd frontend && npm run test:watch
   case leaves the learner on zero until tomorrow.
 - `ActivityGradingTest` — every grader, including umlaut folding (`ae` for `ä`), accepted
   alternatives and partial-credit feedback.
-- `ScoreServiceTest`, `SchemaMaintenanceTest`, `ExternalServicesTest`, `WiktionaryParserTest`.
+- `VocabularyServiceTest` — the word bank: saving the same word twice never resets a
+  schedule the learner built up, the Leitner boxes move the right way, a missed word is
+  resolved from either side of a taught pair (umlauts folded), a matching activity files
+  only what was actually missed, and a word the lesson never taught is not guessed at.
+- `LessonControllerTest` — the lock, which lives only in the controller: a locked lesson
+  hands back no activities and refuses every mutating call with `403`.
+- `LessonServiceTest` — the unlock chain across unit boundaries.
+- `CourseControllerTest`, `UserServiceTest`, `ScoreServiceTest`, `SchemaMaintenanceTest`,
+  `ExternalServicesTest`, `WiktionaryParserTest`.
 
 **Frontend components** (`frontend/src/**/*.test.tsx`)
 

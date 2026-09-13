@@ -10,6 +10,12 @@ import react from '@vitejs/plugin-react';
 // on 8082 with its own database, and points the dev server at that one.
 const backendUrl = process.env.BACKEND_URL ?? 'http://localhost:8081';
 
+// NOTE: editing tailwind.config.js does NOT take effect in a running dev
+// server. PostCSS resolves that file once and caches it for the life of the
+// Node process, and Vite's own restart reuses the process, so the new
+// utilities are simply missing from the served CSS — which shows up as a
+// broken-looking page rather than as an error. Stop the server and start it
+// again after changing design tokens.
 export default defineConfig({
   plugins: [react()],
   server: {
